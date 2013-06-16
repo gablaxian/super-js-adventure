@@ -11,6 +11,15 @@ var canvas  = document.getElementById('super-js-adventure'),
         y : 0
     };
 
+// Some helper functions
+
+// requestAnimationFrame still isn't fully supported unprefixed, so use this to force those browsers to recognise the function.
+var vendors = ['webkit', 'moz'];
+for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame =
+      window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+}
 
 function changeKey(which, to){
     switch (which){
