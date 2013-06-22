@@ -3,20 +3,59 @@
 <head>
     <meta charset="utf-8">
     <title>Super JS Adventure!</title>
-    
+    <link href='http://fonts.googleapis.com/css?family=Dosis:300' rel='stylesheet' type='text/css'>
     <style type="text/css" media="screen">
         * { margin: 0; padding: 0 }
-        #container { width: 256px; height: 224px; border: 1px solid #999; margin: 20px auto 0 auto; }
+        body {
+            background-color: #BAA978;
+        }
+        header {
+            background: url("images/SJA_LogoTrans@2x.png") no-repeat;
+            background-size: 100% 100%;
+            margin: 40px auto;
+            width: 600px;
+            height: 180px;
+        }
+        h1, h2 {
+            text-align: center;
+            margin: auto;
+            text-indent: -9999px;
+        }
+        #container { width: 256px;
+                     height: 224px; 
+                     border: 1px solid #999; 
+                     margin: 60px auto 0 auto; 
+                 }
+        canvas {
+            background-color: white;
+        }
+        footer {
+            text-align: center;
+            margin: 100px auto;
+        }
+        p {
+            font-family: 'Dosis', sans-serif;
+            font-size: 1.5em;
+        }
+        a {
+            text-decoration: none;
+            color: #E33630;
+        }
     </style>
     
 </head>
 
 <body>
-    
+    <header>
+        <h1>Super JS Adventure</h1>
+        <h2>A Gablaxian Project</h2>
+    </header>
     <div id="container">
         <canvas id="super-js-adventure" width="256" height="224"></canvas>
     </div>
-    
+    <footer>
+        <p>Follow along with the development <a href="http://gablaxian.com/articles/creating-a-game-with-javascript/">here</a> and fork it on <a href="https://github.com/gablaxian/super-js-adventure">GitHub</a>!</p>
+    </footer>
     <script src="js/main.js"></script>
 </body>
 </html>
