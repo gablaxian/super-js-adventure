@@ -4,7 +4,7 @@ var canvas  = document.getElementById('super-js-adventure'),
     ctx     = canvas.getContext('2d'),
     width   = 256,
     height  = 224,
-    key     = [0,0,0,0,0],
+    key     = [0,0,0,0,0,0,0,0], // left, right, up, down, attack, use item, start, select
     link    = new Image(),
     player  = {
         x : 0,
@@ -21,18 +21,6 @@ for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
       window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
 }
 
-function changeKey(which, to){
-    switch (which){
-        case 65: case 37: key[0]=to; break; // left
-        case 87: case 38: key[2]=to; break; // up
-        case 68: case 39: key[1]=to; break; // right
-        case 83: case 40: key[3]=to; break;// down
-        case 32: key[4]=to; break; // space bar;
-    }
-}
-document.onkeydown = function(e)  { changeKey((e||window.event).keyCode, 1); }
-document.onkeyup = function(e)    { changeKey((e||window.event).keyCode, 0); }
-
 function init() {
     // Initialise the game!
     link.src = 'images/link.png';
@@ -40,6 +28,24 @@ function init() {
     // Place Link a little more central
     player.x = 100;
     player.y = 100;
+
+    // Setup the Input
+    Input.init();
+
+    // scale_canvas(3);
+}
+
+function scale_canvas(s) {
+    var css = '';
+        var prefixes = ['webkit','moz','o','ms'];
+        for (var i=0; i<prefixes.length; i++)
+        {
+            var prefix = prefixes[i];
+            css += '-'+prefix+'-transform: scale('+s+','+s+');';
+            css += '-'+prefix+'-transform-origin: 0 0;'
+        };
+        canvas.style.cssText = css;
+        canvas.parentNode.style.cssText = 'width:'+width*s+'px;height:'+height*s+'px;';
 }
 
 function main() {
