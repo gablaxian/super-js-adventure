@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Super JS Adventure!</title>
+    
+    <style type="text/css" media="screen">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'helvetica neue', arial, helvetica, sans-serif;
+        }
+        
+        img, div, canvas {
+            image-rendering:optimizeSpeed;             /* Legal fallback */
+            image-rendering:-moz-crisp-edges;          /* Firefox        */
+            image-rendering:-o-crisp-edges;            /* Opera          */
+            image-rendering:-webkit-optimize-contrast; /* Safari         */
+            image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+            image-rendering:crisp-edges;               /* CSS4 Proposed  */
+            image-rendering:pixelated;                 /* CSS4 Proposed  */
+            -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+        }
+
+        main {
+            height: 100%;
+            padding-right: 320px;
+        }
+
+        .canvas-container {
+            float: left;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .canvas {
+            position: relative;
+            background-color: orange;
+        }
+
+        .canvas div {
+            position: absolute;
+        }
+
+        .sidebar {
+            float: right;
+            background-color: #efefef;
+            width: 320px;
+            height: 100%;
+            margin-right: -320px;
+        }
+
+        .tiles li {
+            padding: 0.3em;
+            border-bottom: 1px solid #ccc;
+            cursor: default;
+        }
+    </style>
+    
+</head>
+
+<body>
+    
+    <main role="main">
+        
+        <div class="canvas-container">
+            <div class="canvas"></div>
+        </div>
+
+        <div class="sidebar">
+            <div class="tabs">
+                
+            </div>
+
+            <div class="tiles">
+                <ul>
+                    <li>Sand 1</li>
+                    <li>Sand 2</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function $(elm) { return document.querySelector(elm); }
+
+        var canvas  = $('.canvas'),
+            sprite  = new Image(),
+            scale   = 4,
+            rows    = 1, // 28
+            cols    = 1; // 32
+
+        var srcCanvas   = document.createElement('canvas');
+        var dstCanvas   = document.createElement('canvas');
+        var srcCtx      = srcCanvas.getContext('2d');
+        var dstCtx      = dstCanvas.getContext('2d');
+
+
+        // Size the ‘canvas’
+        $('.canvas').style['width']  = (224 * 8) + 'px';
+        $('.canvas').style['height'] = (256 * 8) + 'px';
+
+        // Load the sprite
+        sprite.src = 'images/overworld-sprite.png';
+        
+        sprite.onload = function() {
+            render();
+        }
+
+        // Set up the tiles
+        var overworld_tiles = new Array();
+
+        for (var row = 0; row < rows; row++) {
+            overworld_tiles[row] = new Array();
+
+            for (var col = 0; col < cols; col++) {
+                overworld_tiles[row][col] = 0;
+            }
+        }
+
+
+        function render() {
+            // render the tiles
+            for (var row = 0; row < overworld_tiles.length; row++) {
+                for (var col = 0; col < overworld_tiles[row].length; col++) {
+
+                    /**
+                        Try using canvas to slice the sprite and create a base64 encoded crop to use as a background for the div?
+                        Still has the issue of aliasing the image though.
+                        Use an image?
+                    **/
+
+                    // var elm = document.createElement('div');
+
+                    // elm.style['background']      = 'url(images/overworld-sprite.png) -8px -8px no-repeat';
+                    // elm.style['backgroundSize']  = '2000%';
+
+                    // elm.style['width']  = (8 * scale) + 'px';
+                    // elm.style['height'] = (8 * scale) + 'px';
+
+                    // elm.style['top']    = row * (8 * scale) + 'px';
+                    // elm.style['left']   = col * (8 * scale) + 'px';
+
+                    /*
+                        Image elements
+                    */
+
+                    var elm = new Image();
+
+                    elm.style['top']    = row * (8 * scale) + 'px';
+                    elm.style['left']   = col * (8 * scale) + 'px';
+
+                    elm.src = scaleSlice(sprite, 4, 0, 0, 8, 8);
+
+                    $('.canvas').appendChild(elm);
+
+                    // var offsetX         = 16,
+                    //     offsetY         = 16,
+                    //     source_width    = 8,
+                    //     source_height   = 8;
+
+                    // ctx.drawImage(sprite, offsetX, offsetY, source_width, source_height, row * (8 * scale), col * (8 * scale), 8 * scale, 8 * scale);
+                }
+            }
+        }
+
+        function scaleSlice(img, factor, offsetX, offsetY, width, height) {
+            
+            // set up source
+            srcCanvas.width     = img.width;
+            srcCanvas.height    = img.height;
+            srcCtx.clearRect(0, 0, img.width, img.height);
+            srcCtx.drawImage(img, 0, 0);
+            
+            var srcData = srcCtx.getImageData(0, 0, img.width, img.height).data;
+
+            var sw = scale * img.width;
+            var sh = scale * img.height;
+
+            // set up destination
+            dstCanvas.width     = sw;
+            dstCanvas.height    = sh;
+            dstCtx.clearRect(0, 0, sw, sh);
+
+            var dstImgData  = dstCtx.getImageData(0,0,sw,sh);
+            var dstData     = dstImgData.data;
+
+            // scale
+            var srcP = 0;
+            var dstP = 0;
+
+            // scale
+            var srcP = 0;
+            var dstP = 0;
+            for (var y = 0; y < img.height; ++y) {
+                for (var i = 0; i < scale; ++i) {
+                    for (var x = 0; x < img.width; ++x) {
+                        var srcP = 4 * (y * img.width + x);
+                        for (var j = 0; j < scale; ++j) {
+                            var tmp = srcP;
+                            dstData[dstP++] = srcData[tmp++];
+                            dstData[dstP++] = srcData[tmp++];
+                            dstData[dstP++] = srcData[tmp++];
+                            dstData[dstP++] = srcData[tmp++];
+                        };
+                    };
+                };
+            };
+
+            dstCtx.putImageData(dstImgData, 0, 0);
+
+             $('.canvas').appendChild(dstCanvas);
+
+            return dstCanvas.toDataURL();
+        }
+
+    </script>
+</body>
+</html>
