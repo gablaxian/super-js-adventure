@@ -1,0 +1,74 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'helvetica neue', arial, helvetica, sans-serif;
+    min-width:  960px;
+    min-height: 540px;
+}
+
+img, div, canvas {
+    image-rendering:optimizeSpeed;             /* Legal fallback */
+    image-rendering:-moz-crisp-edges;          /* Firefox        */
+    image-rendering:-o-crisp-edges;            /* Opera          */
+    image-rendering:-webkit-optimize-contrast; /* Safari         */
+    image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+    image-rendering:crisp-edges;               /* CSS4 Proposed  */
+    image-rendering:pixelated;                 /* CSS4 Proposed  */
+    -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+}
+
+main {
+    height: 100%;
+    padding-right: 320px;
+}
+
+.canvas-container {
+    float: left;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.canvas {
+    position: relative;
+    background-color: orange;
+}
+
+.canvas div {
+    position: absolute;
+}
+
+.sidebar {
+    float: right;
+    background-color: #efefef;
+    width: 320px;
+    height: 100%;
+    margin-right: -320px;
+}
+
+.layers {}
+
+.tiles {
+    position:   absolute;
+    top:        50%;
+    height:     50%;
+    width:      100%;
+    background-color: #e0e0e0;
+    overflow:   auto;
+}
+
+.tiles li {
+    font-size:      0.9rem;
+    padding:        0.5em;
+    border-bottom:  1px solid #ccc;
+    cursor:         default;
+}
+
+.tiles li img {
+    margin-right:   0.4em;
+    vertical-align: middle;
+}
