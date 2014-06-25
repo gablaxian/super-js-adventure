@@ -16,7 +16,13 @@
         </div>
 
         <div class="sidebar">
-            <div class="layers"></div>
+            <div class="layers-container">
+                <div class="layers"></div>
+                <div class="controls">
+                    <span class="new-layer">+</span>
+                </div>
+            </div>
+            
             <div class="tiles"></div>
         </div>
     </main>
@@ -65,11 +71,18 @@
             'use strict';
 
             var _canvas         = _('.canvas'),
-                overworld_tiles = new Array(),
                 tileSize        = 8,
                 scale           = 4,
                 cols            = 32, // 256
                 rows            = 28, // 224
+
+                //layers
+                layers          = new Array(),
+                layerLabels     = new Array('bg'),
+                selectedLayer   = 0,
+
+                // mouse events
+                isDragging = false,
 
                 // Image scaling
                 srcCanvas,
@@ -81,6 +94,8 @@
                 selectedTile,
                 elmClicked;
 
+                
+
             var init = function() {
                 srcCanvas   = document.createElement('canvas'),
                 dstCanvas   = document.createElement('canvas'),
@@ -88,13 +103,32 @@
                 dstCtx      = dstCanvas.getContext('2d');
 
                 loadInterface();
-                setupLevelArray();
-                drawGrid();
+                setupLayers();
                 loadTiles();
+                drawGrid();
+                // setupLevelArray();
 
                 // events
                 _('.tiles').addEventListener('click', selectTile);
-                _canvas.addEventListener('click', placeTile);
+                _('.layers').addEventListener('click', selectLayer);
+                _('.layers-container .controls span').addEventListener('click', createNewLayer);
+
+
+                _canvas.addEventListener('mousedown', function() {
+                    isDragging = true;
+                });
+
+                _canvas.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+
+                _canvas.addEventListener('mousemove', function(e) {
+                    if( isDragging ) {
+                        placeTile(e);
+                    }
+                });
+
+                _canvas.addEventListener('mousedown', placeTile);
             }
 
             var loadInterface = function() {
@@ -106,12 +140,43 @@
                 _('.tiles').style['width'] = window.getComputedStyle( _('.sidebar') ).width;
             }
 
-            var setupLevelArray = function() {
+            var setupLayers = function() {
+                layers[0] = new Array();
+
+                setupLevelArray(layers[0]);
+
+                selectedLayer = 0;
+
+                var ul = document.createElement('ul');
+
+                for(var i = 0; i < layers.length; i++) {
+                    var li      = document.createElement('li'),
+                        label   = document.createElement('label'),
+                        input   = document.createElement('input'),
+                        text    = document.createTextNode(layerLabels[i]);
+
+                    input.setAttribute('type', 'checkbox');
+                    input.setAttribute('checked', 'checked');
+
+                    label.appendChild(text);
+                    li.appendChild(input);
+                    li.appendChild(label);
+                    ul.appendChild(li);
+                }
+
+                _('.layers').appendChild(ul);
+
+                // select the default layer
+                var layerList = document.querySelectorAll('.layers li');
+                layerList[selectedLayer].style['background-color'] = 'rgba(146, 209, 184, 1)';
+            }
+
+            var setupLevelArray = function(arr) {
                 for (var row = 0; row < rows; row++) {
-                    overworld_tiles[row] = new Array();
+                    arr[row] = new Array();
 
                     for (var col = 0; col < cols; col++) {
-                        overworld_tiles[row][col] = 0;
+                        arr[row][col] = 0;
                     };
                 };
             }
@@ -134,6 +199,7 @@
                 gridCtx.strokeStyle = '#333';
                 gridCtx.lineWidth   = 1;
 
+                // fix the sub-pixel line problem by subtracting 0.5
                 for (var col = 1; col < cols; col++) {
                     gridCtx.beginPath();
                     gridCtx.moveTo( (col * tileSize * scale) - 0.5, 0 );
@@ -154,11 +220,13 @@
                     tileCount       = 22,
                     tilesLoaded     = 0,
                     dir             = 'images/Zelda-Tiles-8x8/Overworld/',
-                    ul              = document.createElement('ul');
+                    ul              = document.createElement('ul'),
+                    liArray         = [];
 
                 for (var i = 1; i < (tileCount+1); i++) {
                     var img         = new Image(),
-                        fileName    = 'grass-dirt0' + (i < 10 ? '0'+i : i);
+                        num         = (i < 10 ? '0'+i : i),
+                        fileName    = 'grass-dirt0' + num;
 
                     img.src = dir + fileName + '.png';
 
@@ -236,27 +304,11 @@
                 // render the tiles
                 for (var row = 0; row < overworld_tiles.length; row++) {
                     for (var col = 0; col < overworld_tiles[row].length; col++) {
-
-                        /**
-                            Try using canvas to slice the sprite and create a base64 encoded crop to use as a background for the div?
-                            Still has the issue of aliasing the image though.
-                            Use an image?
-                        **/
-
-                        // var elm = document.createElement('div');
-
-                        // elm.style['background']      = 'url(images/overworld-sprite.png) -8px -8px no-repeat';
-                        // elm.style['backgroundSize']  = '2000%';
-
-                        // elm.style['width']  = (8 * scale) + 'px';
-                        // elm.style['height'] = (8 * scale) + 'px';
-
-                        // elm.style['top']    = row * (8 * scale) + 'px';
-                        // elm.style['left']   = col * (8 * scale) + 'px';
-
                         /*
                             Image elements
                         */
+
+                        console.log('cell');
 
                         // var elm = new Image();
 
@@ -297,38 +349,142 @@
             }
 
             var selectTile = function(e) {
-                var le = document.querySelectorAll('.tiles li');
+                var le      = document.querySelectorAll('.tiles li'),
+                    clicked = e.target;
 
                 for (var i = 0; i < le.length; i++) {
-                    le[i].style['border'] = '';
+                    le[i].style['background-color'] = 'transparent';
                 };
 
-                if( elmClicked == null )
-                    elmClicked = e.target;
-
-                while( elmClicked.nodeName != 'LI' && elmClicked != e.currentTarget ) {
-                    elmClicked = e.target.parentNode;
+                while( clicked.nodeName != 'LI' && clicked != e.currentTarget ) {
+                    clicked = e.target.parentNode;
                 };
 
-                elmClicked.style['border']  = '1px solid green';
-                selectedTile                = elmClicked;
-                elmClicked                  = null;
+                clicked.style['background-color'] = 'rgba(146, 209, 184, 1)';
+                selectedTile = clicked;
+
+                console.log(selectedTile);
             }
 
+            //
+            var createNewLayer = function(e) {
+                var layerList   = _('.layers ul'),
+                    length      = document.querySelectorAll('.layers li').length,
+                    li          = document.createElement('li'),
+                    label       = document.createElement('label'),
+                    input       = document.createElement('input'),
+                    text        = document.createTextNode('Layer ' + (length + 1));
+
+                input.setAttribute('type', 'checkbox');
+                input.setAttribute('checked', 'checked');
+
+                label.appendChild(text);
+                li.appendChild(input);
+                li.appendChild(label);
+                layerList.appendChild(li);
+
+                layers[length] = new Array();
+                setupLevelArray(layers[length]);
+
+                // console.log(layers);
+
+                e.preventDefault();
+                return false;
+            }
+
+            //
+            var selectLayer = function(e) {
+                var lis     = document.querySelectorAll('.layers li'),
+                    clicked = e.target;
+
+                // fixes issue where clicking the input boxes fires the event twice. Also use this opportunity
+                // to pass off the event to the desired action for the input, toggling the layer visibility.
+                if( clicked.nodeName == 'INPUT' ) {
+                    toggleLayerVisibility(clicked);
+                    return;
+                }
+
+                while( clicked.nodeName != 'LI' && clicked != e.currentTarget ) {
+                    clicked = e.target.parentNode;
+                };
+
+                if( clicked.nodeName != 'LI' )
+                    return;
+
+                // reset the selected layers visual indicator and find the index of the selected layer
+                for (var i = lis.length; i--;) {
+                    lis[i].style['background-color'] = 'transparent';
+
+                    if( clicked == lis[i] )
+                        selectedLayer = i;
+                };
+
+                clicked.style['background-color'] = 'rgba(146, 209, 184, 1)';
+
+                console.log(selectedLayer);
+            }
+
+            //
+            var toggleLayerVisibility = function(element) {
+                console.log('toggling visibility');
+
+                var lis         = document.querySelectorAll('.layers li'),
+                    selectedLi  = element.parentNode,
+                    idx         = 0,
+                    display     = element.checked ? 'block' : 'none';
+
+                for (var i = lis.length; i--;) {
+                    if( selectedLi == lis[i] )
+                        idx = i;
+                };
+
+                var layer = layers[idx];
+
+                for( var row = 0; row < rows; row++ ) {
+                    for (var col=0; col < cols; col++) {
+                        if( layer[row][col] != 0 ) {
+                            layer[row][col].style['display'] = display;
+                        }
+                    };
+                };
+            }
+
+            //
             var placeTile = function(e) {
                 if( !selectedTile )
                     return;
 
-                var tileElement = selectedTile.querySelector('img').cloneNode(true),
-                    gridCell    = pxToCell( (e.clientX + _('.canvas-container').scrollLeft), (e.clientY + _('.canvas-container').scrollTop) );
+                var gridCell = pxToCell( (e.clientX + _('.canvas-container').scrollLeft), (e.clientY + _('.canvas-container').scrollTop) );
+
+                console.log( layers[selectedLayer][gridCell.row][gridCell.col] );
+
+                // If there's a tile already in that cell, delete it from the canvas so we can overwrite it in the grid.
+                if( layers[selectedLayer][gridCell.row][gridCell.col] != 0 )
+                    _canvas.removeChild( layers[selectedLayer][gridCell.row][gridCell.col] );
+
+                var tileElement = selectedTile.querySelector('img').cloneNode(true);
 
                 tileElement.style['position']   = 'absolute';
                 tileElement.style['left']       = (gridCell.col * tileSize * scale) + 'px';
                 tileElement.style['top']        = (gridCell.row * tileSize * scale) + 'px';
 
-                console.log( e.clientX, e.clientY, gridCell, (gridCell.col * tileSize * scale), (gridCell.row * tileSize * scale));
+                // console.log( e.clientX, e.clientY, gridCell, (gridCell.col * tileSize * scale), (gridCell.row * tileSize * scale));
                 
                 _canvas.appendChild(tileElement);
+                layers[selectedLayer][gridCell.row][gridCell.col] = tileElement;
+
+                e.preventDefault();
+            }
+
+
+            //
+            var toJSON = function() {
+
+            }
+
+            //
+            var fromJSON = function() {
+
             }
 
             // Start!

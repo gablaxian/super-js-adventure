@@ -34,8 +34,9 @@ main {
 }
 
 .canvas {
-    position: relative;
-    background-color: orange;
+    position:           relative;
+    background-color:   orange;
+    cursor:             default;
 }
 
 .canvas div {
@@ -50,7 +51,43 @@ main {
     margin-right: -320px;
 }
 
-.layers {}
+.layers-container {
+    position:   absolute;
+    top:        0;
+    height:     50%;
+    width:      320px;
+}
+
+.layers {
+    height:         100%;
+    overflow:       auto;
+    padding-bottom: 20px;
+}
+
+.layers li {
+    list-style: none;
+    font-size:  0.9rem;
+    padding:    0.3em;
+}
+
+.layers input {
+    margin-right: 0.5em;
+}
+
+.layers-container .controls {
+    position:           absolute;
+    bottom:             0;
+    width:              100%;
+    background-color:   #fff;
+}
+
+.layers-container .controls span {
+    display:    block;
+    border:     1px solid #ccc;
+    text-align: center;
+    line-height:20px;
+    cursor:     default;
+}
 
 .tiles {
     position:   absolute;
