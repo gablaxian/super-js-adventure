@@ -1,3 +1,4 @@
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
@@ -89,11 +90,11 @@ main {
     cursor:     default;
 }
 
-.tiles {
+.tiles-container {
     position:   absolute;
     top:        50%;
     height:     50%;
-    width:      100%;
+    width:      320px;
     background-color: #e0e0e0;
     overflow:   auto;
 }
@@ -103,9 +104,37 @@ main {
     padding:        0.5em;
     border-bottom:  1px solid #ccc;
     cursor:         default;
+    list-style:     none;
 }
 
 .tiles li img {
     margin-right:   0.4em;
     vertical-align: middle;
 }
+
+/* Tabs */
+
+.tabs {
+    height:         32px;
+    border-top:     1px solid #aaa;
+    border-bottom:  1px solid #aaa;
+}
+
+.tabs [data-tab] {
+    float:              left;
+    font-size:          0.9rem;
+    width:              50%;
+    text-align:         center;
+    padding:            0.45rem 0;
+    cursor:             default;
+    background-color:   #fff;
+}
+
+.tabs [data-tab]:first-child {
+    border-right: 1px solid #ccc;
+}
+
+.tabs [data-tab].active {
+    background-color: #efefef;
+}
+
