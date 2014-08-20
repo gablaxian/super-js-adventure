@@ -12,7 +12,7 @@
     <main role="main">
         
         <div class="canvas-container">
-            <div class="canvas"></div>
+            <div class="viewport"></div>
         </div>
 
         <div class="sidebar">
@@ -71,11 +71,13 @@
         var Editor = function() {
             'use strict';
 
-            var _canvas         = _('.canvas'),
+            var _viewport       = _('.viewport'),
+                _canvas         = null,
+                ctx             = null,
                 tileSize        = 8,
                 scale           = 4,
-                cols            = 32, // 256
-                rows            = 28, // 224
+                cols            = 512, // 256
+                rows            = 176, // 224
 
                 //layers
                 layers          = new Array(),
@@ -98,10 +100,14 @@
                 
 
             var init = function() {
-                srcCanvas   = document.createElement('canvas'),
-                dstCanvas   = document.createElement('canvas'),
-                srcCtx      = srcCanvas.getContext('2d'),
+                _canvas     = document.createElement('canvas');
+                srcCanvas   = document.createElement('canvas');
+                dstCanvas   = document.createElement('canvas');
+                ctx         = _canvas.getContext('2d');
+                srcCtx      = srcCanvas.getContext('2d');
                 dstCtx      = dstCanvas.getContext('2d');
+
+                _viewport.appendChild(_canvas);
 
                 loadInterface();
                 setupLayers();
@@ -115,27 +121,33 @@
                 _('.layers-container .controls span').addEventListener('click', createNewLayer);
 
 
-                _canvas.addEventListener('mousedown', function() {
+                _viewport.addEventListener('mousedown', function() {
                     isDragging = true;
                 });
 
-                _canvas.addEventListener('mouseup', function() {
+                _viewport.addEventListener('mouseup', function() {
                     isDragging = false;
                 });
 
-                _canvas.addEventListener('mousemove', function(e) {
+                _viewport.addEventListener('mousemove', function(e) {
                     if( isDragging ) {
                         placeTile(e);
                     }
                 });
 
-                _canvas.addEventListener('mousedown', placeTile);
+                _viewport.addEventListener('mousedown', placeTile);
+
+                // render
+                render();
             }
 
             var loadInterface = function() {
-                // Size the ‘canvas’
-                _canvas.style['width']  = (cols * tileSize * scale) + 'px';
-                _canvas.style['height'] = (rows * tileSize * scale) + 'px';
+                // Size the viewport and ‘canvas’
+                _viewport.style['width']  = (cols * tileSize * scale) + 'px';
+                _viewport.style['height'] = (rows * tileSize * scale) + 'px';
+
+                _canvas.width  = (cols * tileSize * scale);
+                _canvas.height = (rows * tileSize * scale);
 
                 // Size the sidebar area
                 _('.tiles').style['width'] = window.getComputedStyle( _('.sidebar') ).width;
@@ -191,11 +203,7 @@
                 _grid.width    = width;
                 _grid.height   = height;
 
-                _grid.style['position'] = 'absolute';
-                _grid.style['top']  = 0;
-                _grid.style['left'] = 0;
-
-                _canvas.appendChild(_grid);
+                _viewport.appendChild(_grid);
 
                 gridCtx.strokeStyle = '#333';
                 gridCtx.lineWidth   = 1;
@@ -203,6 +211,7 @@
                 // fix the sub-pixel line problem by subtracting 0.5
                 for (var col = 1; col < cols; col++) {
                     gridCtx.beginPath();
+                    gridCtx.setLineDash([4,1]);
                     gridCtx.moveTo( (col * tileSize * scale) - 0.5, 0 );
                     gridCtx.lineTo( (col * tileSize * scale) - 0.5, height );
                     gridCtx.stroke();
@@ -210,8 +219,9 @@
 
                 for (var row = 1; row < rows; row++) {
                     gridCtx.beginPath();
-                    gridCtx.moveTo( 0, (row * tileSize * scale) - 0.5 );
-                    gridCtx.lineTo( width, (row * tileSize * scale) - 0.5 );
+                    gridCtx.setLineDash([4,1]);
+                    gridCtx.moveTo( 0,      (row * tileSize * scale) - 0.5 );
+                    gridCtx.lineTo( width,  (row * tileSize * scale) - 0.5 );
                     gridCtx.stroke();
                 };
             }
@@ -300,43 +310,34 @@
 
             /*
                 Render
+
+                Render will be used for initial level loading, to place each saved tile in one fell swoop onto the screen.
+                Placing individual tiles will only affect the area they are added to cut down processing power.
+
+                Initially this was done using individual image elements added to a div. It was thought that using elements, I could leverage the browser to help with events and stuff.
+                But, after testing, it was discovered that browsers just can't cope with the 90,000+ elements that are needed for the Overworld map.
+
+                Canvas proved to be more effectual being capable of stretching the required distance, drawing the required number of tiles and also doing it *really* quickly.
             */
             var render = function() {
                 // render the tiles
-                for (var row = 0; row < overworld_tiles.length; row++) {
-                    for (var col = 0; col < overworld_tiles[row].length; col++) {
-                        /*
-                            Image elements
-                        */
+                console.log(rows, cols);
 
-                        console.log('cell');
+                var elm     = new Image(),
+                    size    = (8 * scale);
 
-                        // var elm = new Image();
+                elm.src = 'images/Zelda-Tiles-8x8/Overworld/grass-dirt001.png';
 
-                        // elm.style['top']    = row * (8 * scale) + 'px';
-                        // elm.style['left']   = col * (8 * scale) + 'px';
+                elm.onload = function() {
+                    var newImg = new Image();
+                    newImg.src = scaleImage(elm, scale);
 
-                        // elm.src = scaleSlice(sprite, 4, 0, 0, 8, 8);
-
-                        // $('.canvas').appendChild(elm);
-
-                        // var offsetX         = 16,
-                        //     offsetY         = 16,
-                        //     source_width    = 8,
-                        //     source_height   = 8;
-
-                        // ctx.drawImage(sprite, offsetX, offsetY, source_width, source_height, row * (8 * scale), col * (8 * scale), 8 * scale, 8 * scale);
-                    };
-                };
-
-                var elm = new Image();
-
-                elm.style['top']    = row * (8 * scale) + 'px';
-                elm.style['left']   = col * (8 * scale) + 'px';
-
-                elm.src = scaleImage(sprite, 2);
-
-                _canvas.appendChild(elm);
+                    for (var row = 0; row < rows; row++) {
+                        for (var col = 0; col < cols; col++) {
+                            ctx.drawImage(newImg, (col * size), (row * size), size, size);
+                        }
+                    }
+                }
             }
 
             var pxToCell = function(x, y) {
@@ -457,21 +458,28 @@
 
                 var gridCell = pxToCell( (e.clientX + _('.canvas-container').scrollLeft), (e.clientY + _('.canvas-container').scrollTop) );
 
-                console.log( layers[selectedLayer][gridCell.row][gridCell.col] );
+                // console.log( layers[selectedLayer][gridCell.row][gridCell.col] );
 
                 // If there's a tile already in that cell, delete it from the canvas so we can overwrite it in the grid.
-                if( layers[selectedLayer][gridCell.row][gridCell.col] != 0 )
-                    _canvas.removeChild( layers[selectedLayer][gridCell.row][gridCell.col] );
+                // if( layers[selectedLayer][gridCell.row][gridCell.col] != 0 )
+                //     _canvas.removeChild( layers[selectedLayer][gridCell.row][gridCell.col] );
 
-                var tileElement = selectedTile.querySelector('img').cloneNode(true);
+                var tileElement = selectedTile.querySelector('img'),
+                    size        = tileSize * scale,
+                    left        = gridCell.col * size,
+                    top         = gridCell.row * size;
 
-                tileElement.style['position']   = 'absolute';
-                tileElement.style['left']       = (gridCell.col * tileSize * scale) + 'px';
-                tileElement.style['top']        = (gridCell.row * tileSize * scale) + 'px';
+                // tileElement.style['position']   = 'absolute';
+                // tileElement.style['left']       = (gridCell.col * tileSize * scale) + 'px';
+                // tileElement.style['top']        = (gridCell.row * tileSize * scale) + 'px';
 
                 // console.log( e.clientX, e.clientY, gridCell, (gridCell.col * tileSize * scale), (gridCell.row * tileSize * scale));
                 
-                _canvas.appendChild(tileElement);
+                // _canvas.appendChild(tileElement);
+
+                // Just paint onto the main canvas for now, covering whatever else is there.
+                ctx.drawImage(tileElement, left, top, size, size);
+
                 layers[selectedLayer][gridCell.row][gridCell.col] = tileElement;
 
                 e.preventDefault();

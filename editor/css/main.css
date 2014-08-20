@@ -12,14 +12,13 @@ body {
 }
 
 img, div, canvas {
-    image-rendering:optimizeSpeed;             /* Legal fallback */
-    image-rendering:-moz-crisp-edges;          /* Firefox        */
-    image-rendering:-o-crisp-edges;            /* Opera          */
-    image-rendering:-webkit-optimize-contrast; /* Safari         */
-    image-rendering:optimize-contrast;         /* CSS3 Proposed  */
-    image-rendering:crisp-edges;               /* CSS4 Proposed  */
-    image-rendering:pixelated;                 /* CSS4 Proposed  */
-    -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+    /*image-rendering:optimizeSpeed;             /* Legal fallback */
+    /*image-rendering:-moz-crisp-edges;          /* Firefox        */
+    /*image-rendering:-o-crisp-edges;            /* Opera          */
+    /*image-rendering:-webkit-optimize-contrast; /* Safari         */
+    /*image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+    /*image-rendering:crisp-edges;               /* CSS4 Proposed  */
+    /*image-rendering:pixelated;                 /* CSS4 Proposed  */
 }
 
 main {
@@ -34,14 +33,16 @@ main {
     overflow: auto;
 }
 
-.canvas {
+.viewport {
     position:           relative;
     background-color:   orange;
     cursor:             default;
 }
 
-.canvas div {
-    position: absolute;
+.viewport canvas {
+    position:   absolute;
+    top:        0;
+    left:       0;
 }
 
 .sidebar {
@@ -100,15 +101,20 @@ main {
 }
 
 .tiles li {
-    font-size:      0.9rem;
+    float:          left;
+    color:          #777;
+    font-size:      0.7rem;
+    width:          33.3%;
     padding:        0.5em;
     border-bottom:  1px solid #ccc;
     cursor:         default;
     list-style:     none;
+    text-align:     center;
 }
 
 .tiles li img {
-    margin-right:   0.4em;
+    display:        block;
+    margin:         0 auto 0.3rem auto;
     vertical-align: middle;
 }
 
