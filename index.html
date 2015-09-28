@@ -5,15 +5,14 @@
     <title>Super JS Adventure!</title>
     
     <style type="text/css" media="screen">
-        * { margin: 0; padding: 0 }
-        #container { width: 256px; height: 224px; border: 1px solid #999; margin: 20px auto 0 auto; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        #container { width: 256px; height: 224px; margin: 20px auto 0 auto; }
 
         canvas {
-            image-rendering: optimizeSpeed;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: optimize-contrast;
-            -ms-interpolation-mode: nearest-neighbor;
+            image-rendering: -moz-crisp-edges;         /* Firefox */
+            image-rendering: -webkit-crisp-edges;      /* Safari */
+            -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+            image-rendering: pixelated;                /* Chrome */
         }
     </style>
     
@@ -25,6 +24,7 @@
         <canvas id="super-js-adventure" width="256" height="224"></canvas>
     </div>
     
+    <script src="js/world.js"></script>
     <script src="js/input.js"></script>
     <script src="js/main.js"></script>
 </body>
