@@ -7,7 +7,6 @@ var height  = 224;
 var mainLoop = null;
 var key     = [0,0,0,0,0,0,0,0]; // left, right, up, down, attack, use item, start, select
 var link    = null; // our intrepid hero
-var gutter  = 2;
 var lastTime = 0;
 var animationUpdateTime = 0;
 var timeSinceLastFrameSwap = 0;
@@ -22,7 +21,7 @@ function Link(x, y) {
     this.x = x;
     this.y = y;
 
-    this.width = 16;
+    this.width = 17;
     this.height = 25;
 
     this.fps = 60;
@@ -34,10 +33,12 @@ function Link(x, y) {
         'stand-down':   [3],
         'stand-up':     [10],
         'stand-right':  [17],
+        'stand-left':   [24],
 
         'walk-down':    [3,4,5,6,5,4,3,2,1,0,1,2],
         'walk-up':      [10,11,12,13,12,11,10,9,8,7,8,9],
-        'walk-right':   [17,18,19,20,19,18,17,16,15,14,15,16]
+        'walk-right':   [17,18,19,20,19,18,17,16,15,14,15,16],
+        'walk-left':    [24,25,26,27,26,25,24,23,22,21,22,23]
     }
     this.sequenceIdx = 0;
     this.moving = false;
@@ -48,8 +49,7 @@ function Link(x, y) {
 
         if( this.timeSinceLastFrameSwap > this.animationUpdateTime ) {
 
-            var seq = this.moving ? 'walk-' : 'stand-';
-            seq += (this.facing == 'left' ? 'right' : this.facing);
+            var seq = (this.moving ? 'walk-' : 'stand-') + this.facing;
 
             var currentSequence = this.sequences[seq];
 
@@ -61,26 +61,15 @@ function Link(x, y) {
             var col = currentSequence[this.sequenceIdx] % 7;
             var row = Math.floor( currentSequence[this.sequenceIdx] / 7 );
 
-            this.sliceX = ( col * 16 ) + ( col * gutter );
-            this.sliceY = row * 25;
+            this.offsetX = col * this.width;
+            this.offsetY = row * this.height;
 
             this.timeSinceLastFrameSwap = 0;
         }
     }
 
     this.draw = function() {
-
-        var scaleX = this.facing == 'left' ? -1 : 1;
-
-        ctx.save();
-
-        ctx.translate(this.x, this.y);
-        ctx.translate(8, 0);
-        ctx.scale(scaleX, 1);
-        ctx.drawImage(this.img, this.sliceX, this.sliceY, 16, 25, -8, 0, 16, 25);
-
-        ctx.restore();
-
+        ctx.drawImage(this.img, this.offsetX, this.offsetY, this.width, this.height, this.x, this.y, this.width, this.height);
     }
 }
 
