@@ -12,8 +12,8 @@ var Input = {
 
     init: function() {
         // Set up the keyboard events
-        document.onkeydown  = function(e) { Input.changeKey((e||window.event).keyCode, 1); }
-        document.onkeyup    = function(e) { Input.changeKey((e||window.event).keyCode, 0); }
+        document.addEventListener('keydown', function(e) { Input.changeKey(e.keyCode, 1) });
+        document.addEventListener('keyup',    function(e) { Input.changeKey(e.keyCode, 0) });
 
         // Checks Chrome to see if the GamePad API is supported.
         var gamepadSupportAvailable = !!navigator.webkitGetGamepads || !!navigator.webkitGamepads;
