@@ -1,146 +1,300 @@
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --sidebar-width: 245px;
+}
 
-html, body {
-    height: 100%;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100vh;
 }
 
 body {
     font-family: 'helvetica neue', arial, helvetica, sans-serif;
+    font-size: 12px;
     min-width:  960px;
     min-height: 540px;
 }
 
 img, div, canvas {
-    /*image-rendering:optimizeSpeed;             /* Legal fallback */
-    /*image-rendering:-moz-crisp-edges;          /* Firefox        */
-    /*image-rendering:-o-crisp-edges;            /* Opera          */
-    /*image-rendering:-webkit-optimize-contrast; /* Safari         */
-    /*image-rendering:optimize-contrast;         /* CSS3 Proposed  */
-    /*image-rendering:crisp-edges;               /* CSS4 Proposed  */
-    /*image-rendering:pixelated;                 /* CSS4 Proposed  */
+    image-rendering: optimizeSpeed;             /* Legal fallback */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed  */
+    image-rendering: crisp-edges;               /* CSS4 Proposed  */
+    image-rendering: pixelated;                 /* CSS4 Proposed  */
 }
 
 main {
-    height: 100%;
-    padding-right: 320px;
+    display: flex;
+    height: 100vh;
 }
 
-.canvas-container {
-    float: left;
+.isSelected {
+    background-color: rgba(146, 209, 184, 1);
+    color: #222;
+}
+
+.marker {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(0,0,255, 0.3);
+    border: 2px solid blue;
+}
+
+.Screen {
+    flex-grow: 1;
     width: 100%;
     height: 100%;
     overflow: auto;
+    background-color: #555;
 }
 
-.viewport {
-    position:           relative;
-    background-color:   orange;
-    cursor:             default;
+.Viewport {
+    position: relative;
+    background-color: orange;
+    cursor: default;
 }
 
-.viewport canvas {
-    position:   absolute;
-    top:        0;
-    left:       0;
+.Viewport canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-.sidebar {
-    float: right;
+/** Sidebar **/
+
+.Sidebar {
     background-color: #efefef;
-    width: 320px;
-    height: 100%;
-    margin-right: -320px;
+    color: #222;
+    flex: 0 0 var(--sidebar-width);
+    height: 100vh;
+    width: var(--sidebar-width);
+    box-shadow: -3px 0px 10px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+.Panels {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
-.layers-container {
-    position:   absolute;
-    top:        0;
-    height:     50%;
-    width:      320px;
+.PanelHeader {
+    background-color: #333;
+    border-bottom: 1px solid #fafafa;
+    border-top: 1px solid #fafafa;
+    color: #fff;
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 4px;
+    text-transform: uppercase;
 }
 
-.layers {
-    height:         100%;
-    overflow:       auto;
-    padding-bottom: 20px;
+/** info **/
+
+.InfoPanel {
+    flex-shrink: 1;
 }
 
-.layers li {
+.InfoPanel-container {
+    padding: 5px;
+}
+
+.InfoPanel a {
+    color: #222;
+}
+
+.export-world {
+    display: inline-block;
+    padding: 4px;
+}
+
+/** map properties **/
+
+.MapsPanel {
+    flex-shrink: 1;
+}
+
+.MapsPanel-container {
+    padding: 4px;
+}
+
+.MapsPanel-container select {
+    display: block;
+    width: 100%;
+}
+
+/** layers **/
+
+.LayersPanel {
+    flex-shrink: 1;
+}
+
+.LayersPanel-layers li {
     list-style: none;
-    font-size:  0.9rem;
-    padding:    0.3em;
+    padding: 0.3em;
+    cursor: default;
 }
 
-.layers input {
+.LayersPanel-layers li:hover {
+    background-color: rgba(146, 209, 184, 0.5);
+}
+
+.LayersPanel-layers input {
     margin-right: 0.5em;
 }
 
-.layers-container .controls {
-    position:           absolute;
-    bottom:             0;
-    width:              100%;
-    background-color:   #fff;
-}
+/** tilesets **/
 
-.layers-container .controls span {
-    display:    block;
-    border:     1px solid #ccc;
-    text-align: center;
-    line-height:20px;
-    cursor:     default;
-}
-
-.tiles-container {
-    position:   absolute;
-    top:        50%;
-    height:     50%;
-    width:      320px;
+.TilesetsPanel {
+    flex-grow: 1;
+    height: 50%;
     background-color: #e0e0e0;
-    overflow:   auto;
 }
 
-.tiles li {
-    float:          left;
-    color:          #777;
-    font-size:      0.7rem;
-    width:          33.3%;
-    padding:        0.5em;
-    border-bottom:  1px solid #ccc;
-    cursor:         default;
-    list-style:     none;
-    text-align:     center;
+.TilesetsPanel .tab-container {
+    height: 100%;
+    overflow: scroll;
 }
 
-.tiles li img {
-    display:        block;
-    margin:         0 auto 0.3rem auto;
+.Tiles {
+    position: relative;
+    width: 100%;
+    overflow: scroll;
+}
+
+.Tiles ul {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: auto;
+}
+
+.Tiles li {
+    list-style: none;
+}
+
+.Tiles img {
+    display: block;
+    margin: 0;
+}
+
+/* Patterns */
+
+.Patterns {
+    position: relative;
+}
+
+.Patterns canvas {
+    display: inline-block;
     vertical-align: middle;
+}
+
+/* Collisions */
+
+.Collisions {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.Collisions div {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    line-height: 42px;
+    padding: 0 4px;
+    text-align: center;
+    width: 48px;
+}
+
+.Collisions div.isActive {
+    border-color: blue;
+}
+
+/**/
+
+.EntitiesPanel {
+    position: relative;
+    flex-grow: 1;
+    height: 50%;
+    overflow: scroll;
+    background-color: #efefef;
 }
 
 /* Tabs */
 
 .tabs {
-    height:         32px;
-    border-top:     1px solid #aaa;
-    border-bottom:  1px solid #aaa;
+    display: flex;
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
 }
 
 .tabs [data-tab] {
-    float:              left;
-    font-size:          0.9rem;
-    width:              50%;
-    text-align:         center;
-    padding:            0.45rem 0;
-    cursor:             default;
-    background-color:   #fff;
+    flex: 1 33.33%;
+    color: #333;
+    text-align: center;
+    padding: 0.45rem 0;
+    cursor: default;
+    background-color: #fff;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 11px;
 }
 
-.tabs [data-tab]:first-child {
-    border-right: 1px solid #ccc;
+.tabs [data-tab] + [data-tab] {
+    border-left: 1px solid #ccc;
 }
 
 .tabs [data-tab].active {
-    background-color: #efefef;
+    border-bottom: 1px solid blue;
 }
 
+.tab-container [data-tab]:not(:first-child) {
+    display: none;
+}
+
+
+/* Modal & overlay */
+
+.Overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.Modal {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    background-color: #fff;
+    width: 960px;
+    height: 550px;
+    z-index: 15;
+}
+.Modal-close {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 14px;
+    cursor: pointer
+}
+.Modal-content {
+    padding: 15px;
+    height: 100%;
+    overflow: scroll;
+}

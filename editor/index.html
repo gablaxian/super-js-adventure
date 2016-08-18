@@ -2,507 +2,159 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Super JS Adventure!</title>
-    
+    <title>Super JS Editor</title>
+
     <link rel="stylesheet" type="text/css" href="css/main.css">
 </head>
 
 <body>
-    
-    <main role="main">
-        
-        <div class="canvas-container">
-            <div class="viewport"></div>
+
+    <main>
+
+        <div class="Screen">
+            <div class="Viewport"></div>
         </div>
 
-        <div class="sidebar">
-            <div class="layers-container">
-                <div class="layers"></div>
-                
-                <div class="controls">
-                    <span class="new-layer">+</span>
-                </div>
-            </div>
-            
-            <div class="tiles-container">
-                <div class="tabs">
-                    <div data-tab="tiles" class="active">Tiles</div>
-                    <div data-tab="patterns">Patterns</div>
+        <div class="Sidebar">
+
+            <div class="Panels">
+
+                <div class="InfoPanel">
+                    <div class="PanelHeader">Controls</div>
+                    <div class="InfoPanel-container">
+                        <button class="export-world">export world</button>
+                    </div>
                 </div>
 
-                <div class="tab-container">
-                    <div data-tab="tiles">
-                        <div class="tiles"></div>
+                <div class="MapsPanel">
+                    <div class="PanelHeader">Maps</div>
+                    <div class="MapsPanel-container"></div>
+                </div>
+
+                <div class="LayersPanel">
+                    <div class="PanelHeader">Layers</div>
+                    <ul class="LayersPanel-layers"></ul>
+                </div>
+
+                <div class="TilesetsPanel">
+                    <div class="PanelHeader">Tilesets</div>
+                    <div class="tabs">
+                        <div data-tab="tiles" class="active">Tiles</div>
+                        <div data-tab="patterns">Patterns</div>
+                        <div data-tab="collisions">Collisions</div>
                     </div>
-                    <div data-tab="patterns">
-                        <div class="patterns"></div>
+
+                    <div class="tab-container">
+                        <div data-tab="tiles">
+                            <div class="Tiles">
+                                <div class="marker"></div>
+                            </div>
+
+                        </div>
+                        <div data-tab="patterns">
+                            <div class="Patterns">
+                                <div class="marker"></div>
+                            </div>
+                        </div>
+                        <div data-tab="collisions">
+                            <div class="Collisions">
+                                <div>none</div>
+                                <div>full</div>
+                                <div>tl - br</div>
+                                <div>tr - bl</div>
+                                <div></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="EntitiesPanel">
+                    <div class="PanelHeader">Entities</div>
+                    <div class="EntitiesPanel-container"></div>
+                    <div class="marker"></div>
+                </div>
             </div>
+        </div>
+
+        <div class="Overlay"></div>
+        <div class="Modal">
+            <div class="Modal-close">close</div>
+            <div class="Modal-content"></div>
         </div>
     </main>
-    
+
     <script src="js/helpers.js"></script>
+    <script src="js/eventer.js"></script>
+
+    <script src="js/db.js"></script>
+
+    <!-- UI -->
+    <script src="js/ui/ui.js"></script>
+    <script src="js/ui/maps-panel.js"></script>
+    <script src="js/ui/layers-panel.js"></script>
+    <script src="js/ui/patterns-panel.js"></script>
+    <script src="js/ui/tilesets-panel.js"></script>
+    <script src="js/ui/collisions-panel.js"></script>
+    <script src="js/ui/entities-panel.js"></script>
+
+
+    <script src="js/sprite.js"></script>
+    <script src="js/pattern.js"></script>
+    <script src="js/entity.js"></script>
+    <script src="js/layer.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/gamemap.js"></script>
+    <script src="js/viewport.js"></script>
+
+    <!-- Editor -->
+    <script src="js/editor.js"></script>
 
     <script>
-        _('.tabs').addEventListener('click', function(e) {
-            var target = e.target,
-                _tabs = document.querySelectorAll('.tabs [data-tab]');
-
-            for (var i = 0; i < _tabs.length; i++) {
-                _tabs[i].classList.remove('active');
-            };
-
-            target.classList.add('active');
-
-            if( target.getAttribute('data-tab') != null ) {
-                var tab = target.getAttribute('data-tab');
-
-                // hide all tab content
-                __('.tab-container [data-tab]').each(function() { this.style['display'] = 'none' });
-
-                // show desired content
-                _('.tab-container [data-tab="'+tab+'"]').style['display'] = 'block';
-            }
-        });
-    </script>
-
-    <script>
-        var Editor = function() {
-            'use strict';
-
-            var _viewport       = _('.viewport'),
-                _canvas         = null,
-                ctx             = null,
-                tileSize        = 8,
-                scale           = 4,
-                cols            = 512, // 256
-                rows            = 176, // 224
-
-                //layers
-                layers          = new Array(),
-                layerLabels     = new Array('bg'),
-                selectedLayer   = 0,
-
-                // mouse events
-                isDragging = false,
-
-                // Image scaling
-                srcCanvas,
-                dstCanvas,
-                srcCtx,
-                dstCtx,
-
-                // Tile select
-                selectedTile,
-                elmClicked;
-
-                
-
-            var init = function() {
-                _canvas     = document.createElement('canvas');
-                srcCanvas   = document.createElement('canvas');
-                dstCanvas   = document.createElement('canvas');
-                ctx         = _canvas.getContext('2d');
-                srcCtx      = srcCanvas.getContext('2d');
-                dstCtx      = dstCanvas.getContext('2d');
-
-                _viewport.appendChild(_canvas);
-
-                loadInterface();
-                setupLayers();
-                loadTiles();
-                drawGrid();
-                // setupLevelArray();
-
-                // events
-                _('.tiles').addEventListener('click', selectTile);
-                _('.layers').addEventListener('click', selectLayer);
-                _('.layers-container .controls span').addEventListener('click', createNewLayer);
-
-
-                _viewport.addEventListener('mousedown', function() {
-                    isDragging = true;
-                });
-
-                _viewport.addEventListener('mouseup', function() {
-                    isDragging = false;
-                });
-
-                _viewport.addEventListener('mousemove', function(e) {
-                    if( isDragging ) {
-                        placeTile(e);
-                    }
-                });
-
-                _viewport.addEventListener('mousedown', placeTile);
-
-                // render
-                render();
-            }
-
-            var loadInterface = function() {
-                // Size the viewport and ‘canvas’
-                _viewport.style['width']  = (cols * tileSize * scale) + 'px';
-                _viewport.style['height'] = (rows * tileSize * scale) + 'px';
-
-                _canvas.width  = (cols * tileSize * scale);
-                _canvas.height = (rows * tileSize * scale);
-
-                // Size the sidebar area
-                _('.tiles').style['width'] = window.getComputedStyle( _('.sidebar') ).width;
-            }
-
-            var setupLayers = function() {
-                layers[0] = new Array();
-
-                setupLevelArray(layers[0]);
-
-                selectedLayer = 0;
-
-                var ul = document.createElement('ul');
-
-                for(var i = 0; i < layers.length; i++) {
-                    var li      = document.createElement('li'),
-                        label   = document.createElement('label'),
-                        input   = document.createElement('input'),
-                        text    = document.createTextNode(layerLabels[i]);
-
-                    input.setAttribute('type', 'checkbox');
-                    input.setAttribute('checked', 'checked');
-
-                    label.appendChild(text);
-                    li.appendChild(input);
-                    li.appendChild(label);
-                    ul.appendChild(li);
-                }
-
-                _('.layers').appendChild(ul);
-
-                // select the default layer
-                var layerList = document.querySelectorAll('.layers li');
-                layerList[selectedLayer].style['background-color'] = 'rgba(146, 209, 184, 1)';
-            }
-
-            var setupLevelArray = function(arr) {
-                for (var row = 0; row < rows; row++) {
-                    arr[row] = new Array();
-
-                    for (var col = 0; col < cols; col++) {
-                        arr[row][col] = 0;
-                    };
-                };
-            }
-
-            var drawGrid = function() {
-                var _grid       = document.createElement('canvas'),
-                    gridCtx     = _grid.getContext('2d'),
-                    width       = (cols * tileSize * scale),
-                    height      = (rows * tileSize * scale);
-
-                _grid.width    = width;
-                _grid.height   = height;
-
-                _viewport.appendChild(_grid);
-
-                gridCtx.strokeStyle = '#333';
-                gridCtx.lineWidth   = 1;
-
-                // fix the sub-pixel line problem by subtracting 0.5
-                for (var col = 1; col < cols; col++) {
-                    gridCtx.beginPath();
-                    gridCtx.setLineDash([4,1]);
-                    gridCtx.moveTo( (col * tileSize * scale) - 0.5, 0 );
-                    gridCtx.lineTo( (col * tileSize * scale) - 0.5, height );
-                    gridCtx.stroke();
-                };
-
-                for (var row = 1; row < rows; row++) {
-                    gridCtx.beginPath();
-                    gridCtx.setLineDash([4,1]);
-                    gridCtx.moveTo( 0,      (row * tileSize * scale) - 0.5 );
-                    gridCtx.lineTo( width,  (row * tileSize * scale) - 0.5 );
-                    gridCtx.stroke();
-                };
-            }
-
-            var loadTiles = function() {
-                var _tileContainer  = _('.tiles'),
-                    tileCount       = 22,
-                    tilesLoaded     = 0,
-                    dir             = 'images/Zelda-Tiles-8x8/Overworld/',
-                    ul              = document.createElement('ul'),
-                    liArray         = [];
-
-                for (var i = 1; i < (tileCount+1); i++) {
-                    var img         = new Image(),
-                        num         = (i < 10 ? '0'+i : i),
-                        fileName    = 'grass-dirt0' + num;
-
-                    img.src = dir + fileName + '.png';
-
-                    img.onload = function() {
-                        var li          = document.createElement('li'),
-                            textNode    = document.createTextNode( 'grass-dirt0' + (tilesLoaded < 10 ? '0'+(tilesLoaded+1) : (tilesLoaded+1)) ),
-                            scaledImage = new Image();
-
-                        scaledImage.src = scaleImage(this, 4);
-
-                        li.appendChild(scaledImage);
-                        li.appendChild(textNode);
-
-                        ul.appendChild(li);
-                        tilesLoaded++;
-
-                        if(tileCount == tilesLoaded)
-                            _tileContainer.appendChild(ul);
-                    };
-                };
-
-            }
-
-            var scaleImage = function(img, factor) {
-                
-                // set up source
-                srcCanvas.width     = img.width;
-                srcCanvas.height    = img.height;
-                srcCtx.clearRect(0, 0, img.width, img.height);
-                srcCtx.drawImage(img, 0, 0);
-                
-                var srcData = srcCtx.getImageData(0, 0, img.width, img.height).data;
-
-                var sw = factor * img.width;
-                var sh = factor * img.height;
-
-                // set up destination
-                dstCanvas.width     = sw;
-                dstCanvas.height    = sh;
-                dstCtx.clearRect(0, 0, sw, sh);
-
-                var dstImgData  = dstCtx.getImageData(0,0,sw,sh);
-                var dstData     = dstImgData.data;
-
-                // factor
-                var srcP = 0;
-                var dstP = 0;
-
-                for (var y = 0; y < img.height; ++y) {
-                    for (var i = 0; i < factor; ++i) {
-                        for (var x = 0; x < img.width; ++x) {
-                            
-                            var srcP = 4 * (y * img.width + x);
-                            
-                            for (var j = 0; j < factor; ++j) {
-                                var tmp = srcP;
-                                dstData[dstP++] = srcData[tmp++];
-                                dstData[dstP++] = srcData[tmp++];
-                                dstData[dstP++] = srcData[tmp++];
-                                dstData[dstP++] = srcData[tmp++];
-                            };
-                        };
-                    };
-                };
-
-                dstCtx.putImageData(dstImgData, 0, 0);
-
-                return dstCanvas.toDataURL();
-            }
-
-            /*
-                Render
-
-                Render will be used for initial level loading, to place each saved tile in one fell swoop onto the screen.
-                Placing individual tiles will only affect the area they are added to cut down processing power.
-
-                Initially this was done using individual image elements added to a div. It was thought that using elements, I could leverage the browser to help with events and stuff.
-                But, after testing, it was discovered that browsers just can't cope with the 90,000+ elements that are needed for the Overworld map.
-
-                Canvas proved to be more effectual being capable of stretching the required distance, drawing the required number of tiles and also doing it *really* quickly.
-            */
-            var render = function() {
-                // render the tiles
-                console.log(rows, cols);
-
-                var elm     = new Image(),
-                    size    = (8 * scale);
-
-                elm.src = 'images/Zelda-Tiles-8x8/Overworld/grass-dirt001.png';
-
-                elm.onload = function() {
-                    var newImg = new Image();
-                    newImg.src = scaleImage(elm, scale);
-
-                    for (var row = 0; row < rows; row++) {
-                        for (var col = 0; col < cols; col++) {
-                            ctx.drawImage(newImg, (col * size), (row * size), size, size);
-                        }
-                    }
-                }
-            }
-
-            var pxToCell = function(x, y) {
-                var width   = cols * tileSize * scale,
-                    height  = rows * tileSize * scale;
-
-                return {
-                    col: Math.floor( (x / width) * cols ),
-                    row: Math.floor( (y / height) * rows )
-                }
-            }
-
-            var selectTile = function(e) {
-                var le      = document.querySelectorAll('.tiles li'),
-                    clicked = e.target;
-
-                for (var i = 0; i < le.length; i++) {
-                    le[i].style['background-color'] = 'transparent';
-                };
-
-                while( clicked.nodeName != 'LI' && clicked != e.currentTarget ) {
-                    clicked = e.target.parentNode;
-                };
-
-                clicked.style['background-color'] = 'rgba(146, 209, 184, 1)';
-                selectedTile = clicked;
-
-                console.log(selectedTile);
-            }
-
-            //
-            var createNewLayer = function(e) {
-                var layerList   = _('.layers ul'),
-                    length      = document.querySelectorAll('.layers li').length,
-                    li          = document.createElement('li'),
-                    label       = document.createElement('label'),
-                    input       = document.createElement('input'),
-                    text        = document.createTextNode('Layer ' + (length + 1));
-
-                input.setAttribute('type', 'checkbox');
-                input.setAttribute('checked', 'checked');
-
-                label.appendChild(text);
-                li.appendChild(input);
-                li.appendChild(label);
-                layerList.appendChild(li);
-
-                layers[length] = new Array();
-                setupLevelArray(layers[length]);
-
-                // console.log(layers);
-
-                e.preventDefault();
-                return false;
-            }
-
-            //
-            var selectLayer = function(e) {
-                var lis     = document.querySelectorAll('.layers li'),
-                    clicked = e.target;
-
-                // fixes issue where clicking the input boxes fires the event twice. Also use this opportunity
-                // to pass off the event to the desired action for the input, toggling the layer visibility.
-                if( clicked.nodeName == 'INPUT' ) {
-                    toggleLayerVisibility(clicked);
-                    return;
-                }
-
-                while( clicked.nodeName != 'LI' && clicked != e.currentTarget ) {
-                    clicked = e.target.parentNode;
-                };
-
-                if( clicked.nodeName != 'LI' )
-                    return;
-
-                // reset the selected layers visual indicator and find the index of the selected layer
-                for (var i = lis.length; i--;) {
-                    lis[i].style['background-color'] = 'transparent';
-
-                    if( clicked == lis[i] )
-                        selectedLayer = i;
-                };
-
-                clicked.style['background-color'] = 'rgba(146, 209, 184, 1)';
-
-                console.log(selectedLayer);
-            }
-
-            //
-            var toggleLayerVisibility = function(element) {
-                console.log('toggling visibility');
-
-                var lis         = document.querySelectorAll('.layers li'),
-                    selectedLi  = element.parentNode,
-                    idx         = 0,
-                    display     = element.checked ? 'block' : 'none';
-
-                for (var i = lis.length; i--;) {
-                    if( selectedLi == lis[i] )
-                        idx = i;
-                };
-
-                var layer = layers[idx];
-
-                for( var row = 0; row < rows; row++ ) {
-                    for (var col=0; col < cols; col++) {
-                        if( layer[row][col] != 0 ) {
-                            layer[row][col].style['display'] = display;
-                        }
-                    };
-                };
-            }
-
-            //
-            var placeTile = function(e) {
-                if( !selectedTile )
-                    return;
-
-                var gridCell = pxToCell( (e.clientX + _('.canvas-container').scrollLeft), (e.clientY + _('.canvas-container').scrollTop) );
-
-                // console.log( layers[selectedLayer][gridCell.row][gridCell.col] );
-
-                // If there's a tile already in that cell, delete it from the canvas so we can overwrite it in the grid.
-                // if( layers[selectedLayer][gridCell.row][gridCell.col] != 0 )
-                //     _canvas.removeChild( layers[selectedLayer][gridCell.row][gridCell.col] );
-
-                var tileElement = selectedTile.querySelector('img'),
-                    size        = tileSize * scale,
-                    left        = gridCell.col * size,
-                    top         = gridCell.row * size;
-
-                // tileElement.style['position']   = 'absolute';
-                // tileElement.style['left']       = (gridCell.col * tileSize * scale) + 'px';
-                // tileElement.style['top']        = (gridCell.row * tileSize * scale) + 'px';
-
-                // console.log( e.clientX, e.clientY, gridCell, (gridCell.col * tileSize * scale), (gridCell.row * tileSize * scale));
-                
-                // _canvas.appendChild(tileElement);
-
-                // Just paint onto the main canvas for now, covering whatever else is there.
-                ctx.drawImage(tileElement, left, top, size, size);
-
-                layers[selectedLayer][gridCell.row][gridCell.col] = tileElement;
-
-                e.preventDefault();
-            }
-
-
-            //
-            var toJSON = function() {
-
-            }
-
-            //
-            var fromJSON = function() {
-
-            }
-
-            // Start!
-            init();
+        let config = {
+            maps: [
+                { "name": "overworld",    "width": (32 * 16),   "height": (22 * 12) },
+                { "name": "dungeon1",     "width": (32 * 6),    "height": (22 * 6) },
+                { "name": "dungeon2",     "width": (32 * 4),    "height": (22 * 8) },
+                { "name": "dungeon3",     "width": (32 * 5),    "height": (22 * 6) },
+                { "name": "dungeon4",     "width": (32 * 4),    "height": (22 * 8) },
+                { "name": "dungeon5",     "width": (32 * 4),    "height": (22 * 8) },
+                { "name": "dungeon6",     "width": (32 * 6),    "height": (22 * 8) },
+                { "name": "dungeon7",     "width": (32 * 6),    "height": (22 * 8) },
+                { "name": "dungeon8",     "width": (32 * 5),    "height": (22 * 8) },
+                { "name": "dungeon9",     "width": (32 * 8),    "height": (22 * 8) },
+                { "name": "cave1",        "width": (32 * 1),    "height": (22 * 1) }
+            ],
+
+            // the customisable tileset layers.
+            // Required layers like collisions and entities are added automatically
+            layers: [
+                { "name": "bg" },
+                { "name": "world" },
+                { "name": "top" }
+            ],
+
+            tilesets: [
+                'overworld-terrain.png',
+                'overworld-cliffs.png'
+            ],
+
+            patterns: [
+                { "atlus": 1, "data": [[46,47],[56,57]] },
+                { "atlus": 1, "data": [[28,29]] }
+            ],
+
+            entities: [
+                { "id": "bush1", "atlus": 1, "data": [[66,67],[76,77]] }
+            ],
+
+            grids: [
+                [8,8],
+                [256,176] // the size of one room
+            ]
         }
 
-
         // Begin!
-        var editor = new Editor();
+        Editor.init(config);
     </script>
 </body>
 </html>
