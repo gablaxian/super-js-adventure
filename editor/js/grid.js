@@ -40,11 +40,16 @@ let Grid = {
     },
 
     render() {
-        // console.log('rendering grid...');
         let cols = Math.floor(this.WIDTH / this.cellWidth);
         let rows = Math.floor(this.HEIGHT / this.cellHeight);
 
-        this.context.strokeStyle    = 'rgba(100,100,100,0.8)';
+        // for the 'room size' grid (larger than the 8px cell size), make the lines darker to have them stand out.
+        if( this.cellWidth > 8 ) {
+            this.context.strokeStyle    = 'rgba(30,30,30,1)';
+        }
+        else {
+            this.context.strokeStyle    = 'rgba(100,100,100,0.8)';
+        }
         this.context.lineWidth      = 1;
 
         // fix the sub-pixel line problem by subtracting 0.5

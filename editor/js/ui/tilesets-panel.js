@@ -17,38 +17,47 @@ UI.TilesetsPanel = {
     },
 
     loadTilesets() {
-        const _ul = document.createElement('ul');
-
         // when each image load promise is fulfilled, as it to the tilesets panel.
         for(var sprite of Global.tilesetsArray) {
-            let _li = document.createElement('li');
+            let _div    = document.createElement('div');
+            let _span   = document.createElement('span');
+            let _text   = document.createTextNode(sprite.name);
 
             sprite.scale(3);
 
-            _li.appendChild(sprite.img);
-            _ul.appendChild(_li);
+            _div.appendChild(sprite.img);
+            _span.appendChild(_text);
+
+            this._tiles.appendChild(_span);
+            this._tiles.appendChild(_div);
         }
-        this._tiles.appendChild(_ul);
     },
 
     selectTile(e) {
-        // console.log(e);
+        // find the number of the image tag which was clicked.
         let idx = UI.getIndex(this._tiles.querySelectorAll('img'), e.target);
+
+        // calculate its offset relative to the tiles bounding box.
+        let parentTop   = _('.Tiles').getBoundingClientRect().top;
+        let imgTop      = this._tilesets[idx].getBoundingClientRect().top;
+        let offSet      = (imgTop - parentTop);
 
         const sprite    = Global.tilesetsArray[idx];
 
         UI.toPlace      = 'tile';
         UI.selectedTile = sprite.pxToCell(e.offsetX, e.offsetY);
 
-        // console.log('selecting tile...', UI.selectedTile, sprite.GID);
-
         // takes the new selected tile cell number and gets its rounded x and y values.
-        const coords    = sprite.cellToPx(UI.selectedTile);
+        let relativeTileID = UI.selectedTile - sprite.GID;
+        const coords    = sprite.cellToPx(relativeTileID);
 
+        // move the marker to the correct position and add the index number of the selected tile.
         this._marker.style.display   = 'block';
-        this._marker.style.top       = coords.y  * sprite._scale + 'px';
+        this._marker.style.top       = offSet + coords.y  * sprite._scale + 'px';
         this._marker.style.left      = coords.x  * sprite._scale + 'px';
         this._marker.style.width     = 8 * sprite._scale + 'px';
         this._marker.style.height    = 8 * sprite._scale + 'px';
+
+        this._marker.innerHTML = relativeTileID;
     }
 }

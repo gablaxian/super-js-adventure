@@ -7,6 +7,11 @@ UI.MapsPanel = {
         this._container = this._panel.querySelector('.MapsPanel-container');
         this._select    = document.createElement('select');
 
+        // Open any previously opened map
+        UI.selectedMap = localStorage.getItem('selectedMap') || 0;
+
+        let count = 0;
+
         // add all the options
         for(var map of maps) {
             let option  = document.createElement('option');
@@ -14,15 +19,17 @@ UI.MapsPanel = {
 
             option.appendChild(text);
             option.setAttribute('value', map.name);
+            if( count == UI.selectedMap ) {
+                option.setAttribute('selected', 'selected');
+            }
 
             this._select.appendChild(option);
+
+            count++;
         }
 
         // add the select to the panel
         this._container.appendChild(this._select);
-
-        // set the first map, overworld, as the start map
-        UI.selectedMap = 0;
 
         // listen to the change event
         this._select.addEventListener('change', e => { this.selectMap(e) });

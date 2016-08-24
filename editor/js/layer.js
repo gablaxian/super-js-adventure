@@ -87,8 +87,16 @@ let Layer = {
     // collision tiles are handled slightly differently. They do not correspond to an image. Instead they are drawn directly with canvas.
     renderTile(cell) {
 
-        let tile = this.data[cell];
+        let tile            = this.data[cell];
+        let coords          = {};
+        let spriteCoords    = {};
 
+        coords = this.cellToPx(cell);
+
+        // clear the cell first.
+        this.context.clearRect(coords.x, coords.y, Global.TILE_SIZE, Global.TILE_SIZE);
+
+        // if there is no tile (or it was just deleted) then do nothing.
         if( tile == null ) {
             return;
         }
@@ -107,18 +115,13 @@ let Layer = {
 
         tile = tile - sprite.GID;
 
-        let coords          = {};
-        let spriteCoords    = {};
 
         if( this.name != 'collision' ) {
-            coords          = this.cellToPx(cell);
             spriteCoords    = sprite.cellToPx(tile);
 
             this.context.drawImage(img, spriteCoords.x, spriteCoords.y, Global.TILE_SIZE, Global.TILE_SIZE, coords.x, coords.y, Global.TILE_SIZE, Global.TILE_SIZE);
         }
         else {
-            coords = this.cellToPx(cell);
-
             this.context.clearRect(coords.x, coords.y, Global.TILE_SIZE, Global.TILE_SIZE);
 
             this.context.fillStyle      = 'rgba(255, 0, 0, 0.3)';

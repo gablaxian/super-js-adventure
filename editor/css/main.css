@@ -1,6 +1,6 @@
 
 :root {
-    --sidebar-width: 245px;
+    --sidebar-width: 265px;
 }
 
 * {
@@ -40,13 +40,15 @@ main {
 
 .marker {
     display: none;
+    background-color: rgba(0,0,255, 0.3);
+    border: 2px solid blue;
+    color: rgba(255,255,255,0.9);
     position: absolute;
     left: 0;
     top: 0;
-    width: 8px;
+    text-align: center;
     height: 8px;
-    background-color: rgba(0,0,255, 0.3);
-    border: 2px solid blue;
+    width: 8px;
 }
 
 .Screen {
@@ -111,7 +113,23 @@ main {
     color: #222;
 }
 
-.export-world {
+.delete {
+    cursor: pointer;
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 4px;
+}
+.delete.isActive {
+    background-color: #444;
+    border-color: #111;
+    color: #fff;
+}
+
+.export-world,
+.explode-button {
     display: inline-block;
     padding: 4px;
 }
@@ -151,7 +169,7 @@ main {
     margin-right: 0.5em;
 }
 
-/** tilesets **/
+/** Tilesets **/
 
 .TilesetsPanel {
     flex-grow: 1;
@@ -165,19 +183,18 @@ main {
 }
 
 .Tiles {
+    overflow: scroll;
+    padding-bottom: 3.5rem;
     position: relative;
     width: 100%;
-    overflow: scroll;
 }
 
-.Tiles ul {
-    display: flex;
-    flex-wrap: wrap;
-    overflow: auto;
-}
-
-.Tiles li {
-    list-style: none;
+.Tiles span {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 6px 0 2px 2px;
+    text-transform: uppercase;
 }
 
 .Tiles img {
@@ -189,6 +206,11 @@ main {
 
 .Patterns {
     position: relative;
+}
+
+.Patterns div {
+    display: inline-block;
+    margin: 2px;
 }
 
 .Patterns canvas {
@@ -231,20 +253,24 @@ main {
 
 .tabs {
     display: flex;
-    border-top: 1px solid #aaa;
     border-bottom: 1px solid #aaa;
+    margin-top: 5px;
 }
 
 .tabs [data-tab] {
-    flex: 1 33.33%;
-    color: #333;
-    text-align: center;
-    padding: 0.45rem 0;
-    cursor: default;
     background-color: #fff;
-    text-transform: uppercase;
+    border: 1px solid #ccc;
+    border-radius: 5px 5px 0 0;
+    border-bottom: none;
+    color: #333;
+    cursor: default;
+    flex: 1 33.33%;
     font-weight: 600;
     font-size: 11px;
+    margin: 1px 1px 0 1px;
+    padding: 0.45rem 0;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .tabs [data-tab] + [data-tab] {
@@ -252,7 +278,8 @@ main {
 }
 
 .tabs [data-tab].active {
-    border-bottom: 1px solid blue;
+    border: 1px solid #666;
+    border-bottom: none;
 }
 
 .tab-container [data-tab]:not(:first-child) {
@@ -297,4 +324,25 @@ main {
     padding: 15px;
     height: 100%;
     overflow: scroll;
+}
+
+/* animation stuff */
+main {
+    perspective: 600px;
+}
+
+.Screen {
+    transform-style: preserve-3d;
+    transition: transform 1s ease;
+}
+.Viewport {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+}
+.Viewport canvas {
+    transition: transform 1s ease;
+}
+
+main.explode .Screen {
+    transform: rotateX(12deg) rotateY(70deg) rotateZ(-5deg) translateX(140px);
 }

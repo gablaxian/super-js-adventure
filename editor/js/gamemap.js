@@ -92,7 +92,8 @@ let GameMap = {
     },
 
     addPattern(cell, pattern) {
-        let layer = this.layers[this.selectedLayer];
+        let layer   = this.layers[this.selectedLayer];
+        let sprite  = Global.tilesetsArray[(pattern.atlus - 1)];
 
         for (var row = 0; row < pattern.TILES_HIGH; row++) {
             for (var col = 0; col < pattern.TILES_WIDE; col++) {
@@ -100,7 +101,7 @@ let GameMap = {
                 let newCell = (row * layer.TILES_WIDE) + col + cell;
                 let tile    = pattern.data[ (row * pattern.TILES_WIDE) + col ];
 
-                layer.addTile(newCell, tile);
+                layer.addTile(newCell, tile + sprite.GID);
                 layer.renderTile(newCell);
             }
         }

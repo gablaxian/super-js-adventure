@@ -37,6 +37,10 @@ let Pattern = {
         let sprite  = Global.tilesetsArray[(this.atlus - 1)];
         let img     = Global.bitmapArray[(this.atlus - 1)];
 
+        if( sprite == null ) {
+            return;
+        }
+
         let coords          = {};
         let spriteCoords    = {};
 

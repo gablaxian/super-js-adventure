@@ -9,6 +9,9 @@ let UI = {
         config.layers   = config.layers     || [];
         config.tilesets = config.tilesets   || [];
 
+        this.exploded   = false;
+        this.deleteMode = false;
+
         UI.MapsPanel.init(config.maps);
         UI.LayersPanel.init(config.layers);
         UI.TilesetsPanel.init(config.tilesets);
@@ -17,13 +20,13 @@ let UI = {
         UI.EntitiesPanel.init(config.entities);
 
         // not sure where to put this yet
-        _('.tabs').addEventListener('click', function(e) {
+        _('.tabs').addEventListener('click', e => {
             let target  = e.target;
             let _tabs   = __('.tabs [data-tab]');
 
-            for (var tab of _tabs) {
+            for(var tab of _tabs) {
                 tab.classList.remove('active');
-            };
+            }
 
             target.classList.add('active');
 
@@ -37,10 +40,51 @@ let UI = {
 
                 // show desired content
                 _('.tab-container [data-tab="'+tab+'"]').style['display'] = 'block';
+
+                // hide all panel markers
+                this.deselect.call(UI.TilesetsPanel);
+                this.deselect.call(UI.PatternsPanel);
             }
         });
 
+        _('.delete').addEventListener('click', () => {
+            if( this.deleteMode ) {
+                _('.delete').classList.remove('isActive');
+                this.deleteMode = false;
+            }
+            else {
+                _('.delete').classList.add('isActive');
+                this.deleteMode = true;
+            }
+        } );
+
         _('.export-world').addEventListener('click', () => Eventer.dispatch('export') );
+
+        _('.explode-button').addEventListener('click', () => {
+            if( !this.exploded ) {
+                let zIndex = 0;
+
+                for(var layer of __('.Viewport canvas')) {
+                    layer.style.transform = `translateZ(${zIndex += 40}px)`;
+                }
+
+                _('.Screen').style.overflow = 'visible';
+                _('main').classList.add('explode');
+
+                this.exploded = true;
+            }
+            else {
+                for(var layer of __('.Viewport canvas')) {
+                    layer.style.transform = 'translateZ(0px)';
+                }
+
+                _('main').classList.remove('explode');
+
+                setTimeout( () => {_('.Screen').style.overflow = 'scroll'}, 1000);
+
+                this.exploded = false;
+            }
+        } );
 
         return Promise.resolve();
     },
@@ -55,25 +99,9 @@ let UI = {
             count++;
         }
         return count;
-    }
-};
-
-UI.Modal = {
-    _overlay       : _('.Overlay'),
-    _modal         : _('.Modal'),
-    _modalContent  : _('.Modal-content'),
-    _close         : _('.Modal-close'),
-
-    show(content) {
-        this._overlay.style.display     = 'block';
-        this._modal.style.display       = 'block';
-        this._modalContent.innerHTML    = '<pre><code>' + content + '</code></pre>';
-
-        this._close.addEventListener('click', () => this.hide());
     },
 
-    hide() {
-        this._overlay.style.display     = 'none';
-        this._modal.style.display       = 'none';
+    deselect() {
+        this._marker.style.display  = 'none';
     }
-}
+};

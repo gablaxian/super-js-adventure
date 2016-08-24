@@ -8,7 +8,8 @@
     This is the main object which glues all the components together.
     Upon initialisation, we:
     - Load the listed assets.
-    - Create bitmaps form the assets (not really required, but it's nice to test out new JS things)
+    - Create bitmaps from the assets (not really required, but it's nice to test out new JS things)
+    - Calculate Atlas GIDs. Atlus is just another name for tileset.
     - Initialise the database.
     - Load data. If there was local data, then add any new objects from the config. If not, use the config data.
     - Setup the UI.
@@ -33,17 +34,18 @@ let Editor = {
         Global.tilesetsArray    = [];
         Global.bitmapArray      = [];
 
+        // some initialisation stuff
         this.maps               = config.maps;
         this.layers             = config.layers;
         this.tilesets           = config.tilesets;
         this.saveTimeoutID      = null;
 
-        // some initialisation stuff
+        // add the two required layers.
         this.layers.push({ "name": "entities" });
         this.layers.push({ "name": "collision" });
 
         // Promises all the way down.
-        // The functions as the end do not need to return Promises (they do not have any async operations), but it makes it look quite neat.
+        // The functions toward the end do not need to return Promises (they do not have any async operations), but it makes it look quite neat. Also... Promises!
         this.loadAssets()
         .then( () => this.createBitmaps() )
         .then( () => this.calculateAtlusGIDs() )
@@ -53,8 +55,6 @@ let Editor = {
         .then( () => UI.init(config) )
         .then( () => Viewport.init(config.maps) )
         .then( () => this.setupEvents() );
-
-        // drawGrid(32*8, 22*8);
     },
 
     /**
@@ -69,7 +69,7 @@ let Editor = {
             let sprite = Object.create(Sprite);
             Global.tilesetsArray.push(sprite);
 
-            promises.push( sprite.init( 'images/tilesets/' + tileset ) );
+            promises.push( sprite.init( tileset ) );
         }
 
         // use the array of promises to create another promise which is fulfilled when all of them are fulfilled.
@@ -91,6 +91,19 @@ let Editor = {
         return Promise.all(promises).then( bitmaps => Global.bitmapArray = bitmaps );
     },
 
+    /**
+     * Each tileset is given a GID (Not actually sure what the G is for, I picked up the idea from Tiled editor) but what it does is give
+     * a tileset an ID so we can figure out which atlas a particular tile belongs to.
+     *
+     * Example:
+     * A cell is saved with an ID of 187. By iterating backwards through the atlases, we can compare the ID against the GIDs and determine which range it sits in:
+     * GID 1: 0
+     * GID 2: 127
+     * GID 3: 206
+     * - 187 is less than 206 but larger than 127, so it is from the second atlus.
+     *
+     * Generally speaking, each GID is either the number of the previous atlus (plus 1) or the next chosen interval up (multiples of 128 or something)
+     */
     calculateAtlusGIDs() {
         let previousCount = 0;
 
@@ -104,17 +117,25 @@ let Editor = {
     },
 
     /**
+     * Listen for certain events set certain functions to trigger.
      */
     setupEvents() {
         Eventer.on('addTile',       () => this.save() );
         Eventer.on('addPattern',    () => this.save() );
         Eventer.on('addCollision',  () => this.save() );
         Eventer.on('addEntity',     () => this.save() );
+        Eventer.on('selectMap',     (idx) => {
+            console.log('saving map...', idx);
+            localStorage.setItem('selectedMap', idx);
+        });
         Eventer.on('export',        () => this.exportData() );
+
+        return Promise.resolve();
     },
 
     /**
-    */
+     * Save all map data.
+     */
     save() {
         clearTimeout(this.saveTimeoutID);
 
@@ -123,6 +144,7 @@ let Editor = {
 
             let world   = {};
 
+            world.version   = config.version;
             world.tile_size = Global.TILE_SIZE;
             world.maps      = [];
 
@@ -136,13 +158,13 @@ let Editor = {
             }
 
             DB.setItem('world', world);
-            // console.log(world);
-        }, 400);
+        }, 500);
 
     },
 
     /**
-    */
+     * Load map data
+     */
     loadData() {
 
         return new Promise( (resolve, reject) => {
@@ -178,15 +200,15 @@ let Editor = {
                 // store the map data globally.
                 Global.world = world;
 
-                // console.log(Global.world);
-
                 resolve();
             });
         });
 
     },
 
-    //
+    /**
+     * TODO: Check the config data against the database for differences and merge/overwrite where necessary.
+     */
     mergeData() {
 
         // external config object takes precedence over stored.
@@ -195,7 +217,9 @@ let Editor = {
         return Promise.resolve();
     },
 
-    //
+    /**
+     * Export the database to a JSON string.
+     */
     exportData() {
 
         // convert the internal data to a game's level structure.

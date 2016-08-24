@@ -16,7 +16,7 @@ let Viewport = {
         this.currentMap     = null;
 
         // grids
-        this.grid           = null;
+        this.grids          = [];
 
         // states
         this.mouseX         = 0;
@@ -24,13 +24,18 @@ let Viewport = {
         this.isDragging     = false;
 
         // setup grids
-        this.grid = Object.create(Grid);
-        this.grid.init(0, 0, 8, 8);
+        for(var gridConfig of config.grids) {
+            let grid = Object.create(Grid);
+            grid.init(0, 0, gridConfig[0], gridConfig[1]);
+
+            this.grids.push(grid);
+        }
 
 
         // set the current map to the first map
         // setup the map's visual properties
-        this.setupMap(Global.world.maps[0]);
+        let mapIdx = localStorage.getItem('selectedMap') || 0;
+        this.setupMap(Global.world.maps[mapIdx]);
 
 
         // add layers
@@ -38,7 +43,9 @@ let Viewport = {
             this._viewport.appendChild(layer.canvas);
         }
 
-        this._viewport.appendChild(this.grid.canvas);
+        for (var grid of this.grids) {
+            this._viewport.appendChild(grid.canvas);
+        }
 
         // events
         this.setupEvents();
@@ -50,7 +57,9 @@ let Viewport = {
         this.currentMap = map;
         this.currentMap.setup();
 
-        this.grid.resize(this.currentMap.getWidthInPx(), this.currentMap.getHeightInPx());
+        for(var grid of this.grids) {
+            grid.resize(this.currentMap.getWidthInPx(), this.currentMap.getHeightInPx());
+        }
 
         this.scale(Global.scale);
         this.center();
@@ -64,6 +73,11 @@ let Viewport = {
 
         this._viewport.addEventListener('mousedown', e => {
             this.isDragging = true;
+
+            if( UI.deleteMode ) {
+                this.deleteTile();
+                return;
+            }
 
             if( UI.toPlace == 'tile' ) {
                 this.placeTile();
@@ -84,6 +98,12 @@ let Viewport = {
             this.mouseY = e.offsetY;
 
             if( this.isDragging ) {
+
+                if( UI.deleteMode ) {
+                    this.deleteTile();
+                    return;
+                }
+                
                 if( UI.toPlace == 'tile' ) {
                     this.placeTile();
                 }
@@ -117,7 +137,9 @@ let Viewport = {
         this._scale = scale;
 
         this.currentMap.scale(scale);
-        this.grid.scale(scale);
+        for (var grid of this.grids) {
+            grid.scale(scale);
+        }
 
         this._viewport.style['width']    = (this.currentMap.getWidthInPx() * scale) + 'px';
         this._viewport.style['height']   = (this.currentMap.getHeightInPx() * scale) + 'px';
@@ -147,8 +169,18 @@ let Viewport = {
         this._viewport.style['transform']   = transform;
     },
 
+    deleteTile() {
+        const clickedX  = (this.mouseX / this._scale);
+        const clickedY  = (this.mouseY / this._scale);
+        const cell      = this.currentMap.pxToCell(clickedX, clickedY);
+
+        this.currentMap.addTile(cell, null);
+        this.currentMap.renderTile(cell);
+
+        Eventer.dispatch('addTile');
+    },
+
     placeTile() {
-        // let gridCell = pxToCell( (e.clientX + _('.Screen').scrollLeft), (e.clientY + _('.Screen').scrollTop) );
         const clickedX  = (this.mouseX / this._scale);
         const clickedY  = (this.mouseY / this._scale);
         const cell      = this.currentMap.pxToCell(clickedX, clickedY);
@@ -165,7 +197,6 @@ let Viewport = {
         const cell      = this.currentMap.pxToCell(clickedX, clickedY);
 
         this.currentMap.addPattern(cell, UI.selectedPattern);
-        // this.currentMap.renderPattern(cell);
 
         Eventer.dispatch('addPattern');
     },
@@ -207,7 +238,9 @@ let Viewport = {
         let startTime = window.performance.now();
 
         this.currentMap.render();
-        this.grid.render();
+        for (var grid of this.grids) {
+            grid.render();
+        }
 
         let endTime = window.performance.now();
 

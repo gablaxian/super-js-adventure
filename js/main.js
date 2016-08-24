@@ -181,7 +181,7 @@ var Map = {
         }
 
         this.drawRoom(this.currentRoomID, 0, 0);
-        
+
         ctx.restore();
 
     },
@@ -344,7 +344,7 @@ function checkCollisions() {
         var topLeftCol  = Math.floor(link.x / 8);
         var topRightCol = Math.floor((link.x+collisionWidth) / 8);
         var row         = Math.floor((link.y+9) / 8); // same for topleft and topright
-        
+
         var tlCell      = (row * NUM_TILES_WIDE) + topLeftCol;
         var trCell      = (row * NUM_TILES_WIDE) + topRightCol;
 
@@ -403,7 +403,7 @@ function main() {
 
     // Clear the screen
     ctx.clearRect(0, 0, 256, 224);
-    
+
     // shift all draw functions down by HUD_HEIGHT amount
     ctx.save();
     ctx.translate(0, HUD_HEIGHT);

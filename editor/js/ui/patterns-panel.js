@@ -7,15 +7,17 @@ UI.PatternsPanel = {
         this._marker    = _('.Patterns .marker');
         this.patterns   = [];
 
-        for (var obj of patterns) {
+        for(var obj of patterns) {
 
             let pattern = Object.create(Pattern);
+            let _div    = document.createElement('div');
 
             pattern.init(obj.atlus, obj.data);
             pattern.render();
 
             this.patterns.push(pattern);
-            this._patterns.appendChild(pattern.canvas);
+            _div.appendChild(pattern.canvas);
+            this._patterns.appendChild(_div);
         }
 
         this._patterns.addEventListener('mousedown', this.selectPattern.bind(this));

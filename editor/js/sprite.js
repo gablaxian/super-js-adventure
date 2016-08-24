@@ -5,7 +5,9 @@ let Sprite = {
 
     init(src) {
         this.img        = new Image();
-        this.img.src    = src;
+        this.img.src    = 'images/tilesets/' + src;
+
+        this.name       = src.replace('.png', '').replace('-', ' ');
 
         this.width      = 0;
         this.height     = 0;
