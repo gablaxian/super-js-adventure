@@ -12,7 +12,7 @@ UI.EntitiesPanel = {
 
             // create the entity
             let entity = Object.create(Entity);
-            entity.init(obj.id, obj.atlus, obj.data);
+            entity.init(obj.id, obj.atlas, obj.data);
 
             // setup a canvas per entity to display it in the sidebar
             let canvas      = document.createElement('canvas');
@@ -21,7 +21,7 @@ UI.EntitiesPanel = {
             canvas.width    = entity.WIDTH;
             canvas.height   = entity.HEIGHT;
 
-            canvas.style['width']  = entity.WIDTH * this.scaleValue + 'px';
+            canvas.style['width']  = entity.WIDTH  * this.scaleValue + 'px';
             canvas.style['height'] = entity.HEIGHT * this.scaleValue + 'px';
 
             entity.render(context);

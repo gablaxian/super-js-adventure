@@ -15,7 +15,7 @@ body {
 }
 
 body {
-    font-family: 'helvetica neue', arial, helvetica, sans-serif;
+    font-family: 'San Francisco', 'helvetica neue', arial, helvetica, sans-serif;
     font-size: 12px;
     min-width:  960px;
     min-height: 540px;
@@ -99,6 +99,10 @@ main {
     text-transform: uppercase;
 }
 
+.Panels > div:first-child .PanelHeader {
+    border-top: none;
+}
+
 /** info **/
 
 .InfoPanel {
@@ -132,6 +136,21 @@ main {
 .explode-button {
     display: inline-block;
     padding: 4px;
+}
+
+/** Zoom **/
+
+.ZoomPanel {
+    flex-shrink: 1;
+}
+
+.ZoomPanel-container {
+    padding: 0.5rem;
+}
+
+.ZoomPanel-factor {
+    display: inline-block;
+    font-size: 1rem;
 }
 
 /** map properties **/
@@ -340,7 +359,7 @@ main {
     transform-style: preserve-3d;
 }
 .Viewport canvas {
-    transition: transform 1s ease;
+    /*transition: transform 1s ease;*/
 }
 
 main.explode .Screen {

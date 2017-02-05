@@ -47,6 +47,9 @@ let Viewport = {
             this._viewport.appendChild(grid.canvas);
         }
 
+        // ghost tile
+        this.createGhostTile();
+
         // events
         this.setupEvents();
 
@@ -97,13 +100,15 @@ let Viewport = {
             this.mouseX = e.offsetX;
             this.mouseY = e.offsetY;
 
+            this.moveGhostTile();
+
             if( this.isDragging ) {
 
                 if( UI.deleteMode ) {
                     this.deleteTile();
                     return;
                 }
-                
+
                 if( UI.toPlace == 'tile' ) {
                     this.placeTile();
                 }
@@ -119,11 +124,9 @@ let Viewport = {
             }
         });
 
-        Eventer.on('selectMap', (idx) => {
-            this.setupMap(Global.world.maps[idx]);
-        });
-        Eventer.on('selectLayer', () => this.currentMap.selectedLayer = UI.selectedLayer );
-        Eventer.on('toggleLayer', (idx, checked) => {
+        Eventer.on('selectMap',     idx => { this.setupMap(Global.world.maps[idx]); });
+        Eventer.on('selectLayer',   () => this.currentMap.selectedLayer = UI.selectedLayer );
+        Eventer.on('toggleLayer',   (idx, checked) => {
             if( checked ) {
                 this.currentMap.layers[idx].show();
             }
@@ -139,6 +142,7 @@ let Viewport = {
         this.currentMap.scale(scale);
         for (var grid of this.grids) {
             grid.scale(scale);
+            grid.render();
         }
 
         this._viewport.style['width']    = (this.currentMap.getWidthInPx() * scale) + 'px';
@@ -234,6 +238,49 @@ let Viewport = {
         Eventer.dispatch('addEntity');
     },
 
+    createGhostTile() {
+        this.ghostTile  = document.createElement('canvas');
+        let context     = this.ghostTile.getContext('2d');
+
+        this.ghostTile.width    = 8 * Global.scale;
+        this.ghostTile.height   = 8 * Global.scale;
+
+        this.ghostTile.style.opacity        = '0.6';
+        this.ghostTile.style.pointerEvents  = 'none';
+
+        // context.fillStyle = 'rgba(30,30,30)';
+        // context.fillRect(0, 0, 8 * Global.scale, 8 * Global.scale);
+
+        console.log('ghost tile created');
+
+        this._viewport.appendChild(this.ghostTile);
+    },
+
+    updateGhostTile(atlas, tiles) {
+        let newPattern  = Object.create(Pattern);
+
+        console.log(atlas, tiles);
+        newPattern.init(atlas, tiles);
+        newPattern.render();
+
+        let context = this.ghostTile.getContext('2d');
+
+        this.ghostTile.width    = newPattern.WIDTH * Global.scale;
+        this.ghostTile.height   = newPattern.HEIGHT * Global.scale;
+
+        context.clearRect(0, 0, this.ghostTile.width, this.ghostTile.height)
+        context.drawImage(newPattern.canvas, 0, 0, newPattern.WIDTH * Global.scale, newPattern.HEIGHT * Global.scale);
+    },
+
+    moveGhostTile() {
+        // console.log(this.mouseX);
+        let tile_size = (Global.TILE_SIZE * Global.scale);
+        let x = Math.floor( this.mouseX / tile_size ) * tile_size;
+        let y = Math.floor( this.mouseY / tile_size ) * tile_size;
+
+        this.ghostTile.style.transform = 'translate3d('+x+'px, '+y+'px, 0)';
+    },
+
     render() {
         let startTime = window.performance.now();
 
@@ -246,4 +293,5 @@ let Viewport = {
 
         console.log( 'map render time: ' + (endTime - startTime) + 'ms' );
     }
+
 }

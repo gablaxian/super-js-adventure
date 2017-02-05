@@ -86,6 +86,11 @@ let UI = {
             }
         } );
 
+        _('.ZoomPanel-slider').addEventListener('change', e => {
+            _('.ZoomPanel-factor').innerHTML = _('.ZoomPanel-slider').value;
+            Viewport.scale( _('.ZoomPanel-slider').value );
+        });
+
         return Promise.resolve();
     },
 

@@ -5,18 +5,36 @@ UI.PatternsPanel = {
     init(patterns) {
         this._patterns  = _('.Patterns');
         this._marker    = _('.Patterns .marker');
+        this.groups     = [];
         this.patterns   = [];
 
         for(var obj of patterns) {
 
+            // create the pattern
             let pattern = Object.create(Pattern);
-            let _div    = document.createElement('div');
-
-            pattern.init(obj.atlus, obj.data);
+            pattern.init(obj.atlas, obj.data);
             pattern.render();
 
             this.patterns.push(pattern);
-            _div.appendChild(pattern.canvas);
+
+            // add the pattern to its atlas group
+            if( !this.groups[obj.atlas] ) {
+                this.groups[obj.atlas] = [];
+            }
+            this.groups[obj.atlas].push(pattern);
+        }
+
+        for(var group of this.groups) {
+            if( !group ) {
+                continue;
+            }
+
+            let _div = document.createElement('div');
+
+            for(var pattern of group) {
+                _div.appendChild(pattern.canvas);
+            }
+
             this._patterns.appendChild(_div);
         }
 
@@ -40,6 +58,8 @@ UI.PatternsPanel = {
 
         UI.toPlace          = 'pattern';
         UI.selectedPattern  = pattern;
+
+        Viewport.updateGhostTile(pattern.atlas, pattern.data);
 
         this._marker.style.display   = 'block';
         this._marker.style.top       = clicked.offsetTop + 'px';

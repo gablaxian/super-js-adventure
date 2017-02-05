@@ -35,7 +35,7 @@ UI.TilesetsPanel = {
 
     selectTile(e) {
         // find the number of the image tag which was clicked.
-        let idx = UI.getIndex(this._tiles.querySelectorAll('img'), e.target);
+        let idx         = UI.getIndex(this._tiles.querySelectorAll('img'), e.target);
 
         // calculate its offset relative to the tiles bounding box.
         let parentTop   = _('.Tiles').getBoundingClientRect().top;
@@ -50,6 +50,9 @@ UI.TilesetsPanel = {
         // takes the new selected tile cell number and gets its rounded x and y values.
         let relativeTileID = UI.selectedTile - sprite.GID;
         const coords    = sprite.cellToPx(relativeTileID);
+
+        // set the ghost tile
+        Viewport.updateGhostTile((idx+1), [[relativeTileID]]);
 
         // move the marker to the correct position and add the index number of the selected tile.
         this._marker.style.display   = 'block';

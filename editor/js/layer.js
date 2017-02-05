@@ -102,14 +102,14 @@ let Layer = {
         }
 
         let idx;
-        for (idx = Global.tilesetsArray.length - 1; idx >= 0; idx--) {
+        for (idx = Global.tilesetsArray.length - 1; idx > 0; idx--) {
             if (Global.tilesetsArray[idx].GID <= tile) {
                 break;
             }
         }
 
-        const sprite        = Global.tilesetsArray[idx];
-        const img           = Global.bitmapArray[idx];
+        const sprite    = Global.tilesetsArray[idx];
+        const img       = Global.bitmapArray[idx];
 
         // console.log('rendering tile...', sprite, img, cell, tile);
 
@@ -165,14 +165,14 @@ let Layer = {
         let coords          = {};
         let spriteCoords    = {};
 
-        if( this.name == 'entities' ) {
-            for (var entity of this.data) {
-                // entity.render();
-                // this.renderEntity(entity);
-            }
-
-            return;
-        }
+        // if( this.name == 'entities' ) {
+        //     for (var entity of this.data) {
+        //         entity.render();
+        //         this.renderEntity(entity);
+        //     }
+        //
+        //     return;
+        // }
 
         for(var cell = 0; cell < this.data.length; cell++) {
 
@@ -185,7 +185,7 @@ let Layer = {
 
                 // get the atlas
                 let idx = 0;
-                for (idx = Global.tilesetsArray.length - 1; idx >= 0; idx--) {
+                for (idx = Global.tilesetsArray.length - 1; idx > 0; idx--) {
                     if (Global.tilesetsArray[idx].GID <= tile) {
                         break;
                     }

@@ -9,7 +9,7 @@
     Upon initialisation, we:
     - Load the listed assets.
     - Create bitmaps from the assets (not really required, but it's nice to test out new JS things)
-    - Calculate Atlas GIDs. Atlus is just another name for tileset.
+    - Calculate Atlas GIDs. Atlas is just another name for tileset.
     - Initialise the database.
     - Load data. If there was local data, then add any new objects from the config. If not, use the config data.
     - Setup the UI.
@@ -48,7 +48,7 @@ let Editor = {
         // The functions toward the end do not need to return Promises (they do not have any async operations), but it makes it look quite neat. Also... Promises!
         this.loadAssets()
         .then( () => this.createBitmaps() )
-        .then( () => this.calculateAtlusGIDs() )
+        .then( () => this.calculateAtlasGIDs() )
         .then( () => DB.init() )
         .then( () => this.loadData() )
         .then( () => this.mergeData() )
@@ -100,11 +100,11 @@ let Editor = {
      * GID 1: 0
      * GID 2: 127
      * GID 3: 206
-     * - 187 is less than 206 but larger than 127, so it is from the second atlus.
+     * - 187 is less than 206 but larger than 127, so it is from the second atlas.
      *
-     * Generally speaking, each GID is either the number of the previous atlus (plus 1) or the next chosen interval up (multiples of 128 or something)
+     * Generally speaking, each GID is either the number of the previous atlas (plus 1) or the next chosen interval up (multiples of 128 or something)
      */
-    calculateAtlusGIDs() {
+    calculateAtlasGIDs() {
         let previousCount = 0;
 
         for (var tileset of Global.tilesetsArray) {

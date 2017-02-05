@@ -2,8 +2,8 @@
 'use strict';
 
 let Entity = {
-    init(id, atlus, data) {
-        this.atlus          = atlus;
+    init(id, atlas, data) {
+        this.atlas          = atlas;
         this.data           = data.reduce((a, b) => a.concat(b), []);
         this.scaleValue     = 3;
 
@@ -19,8 +19,8 @@ let Entity = {
 
     render(context) {
 
-        let sprite  = Global.tilesetsArray[(this.atlus - 1)];
-        let img     = Global.bitmapArray[(this.atlus - 1)];
+        let sprite  = Global.tilesetsArray[(this.atlas - 1)];
+        let img     = Global.bitmapArray[(this.atlas - 1)];
 
         let coords          = {};
         let spriteCoords    = {};

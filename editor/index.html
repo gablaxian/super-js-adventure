@@ -23,9 +23,18 @@
                 <div class="InfoPanel">
                     <div class="PanelHeader">Controls</div>
                     <div class="InfoPanel-container">
-                        <span class="delete">Delete</span>
+                        <span class="delete">erase</span>
                         <button class="export-world">export world</button>
                         <button class="explode-button">Boom</button>
+                    </div>
+                </div>
+
+                <!-- Zoom -->
+                <div class="ZoomPanel">
+                    <div class="PanelHeader">Zoom</div>
+                    <div class="ZoomPanel-container">
+                        <input class="ZoomPanel-slider" type="range" name="zoom-slider" min="1" max="5" step="1" value="3">
+                        <span class="ZoomPanel-factor">3</span>
                     </div>
                 </div>
 
@@ -160,20 +169,16 @@
             ],
 
             patterns: [
-                { "atlus": 1, "data": [[46,47],[56,57]] },
-                { "atlus": 1, "data": [[28,29]] },
-
-                { "atlus": 2, "data": [[34,35],[48,49],[62,63]] },
-
-                { "atlus": 3, "data": [[70,71,72,73,74],[81,82,83,84,85],[92,93,94,95,96]] },
-
-                { "atlus": 6, "data": [[51,52],[61,62]] },
-
-                { "atlus": 8, "data": [[49,50], [60,61]] }
+                { "atlas": 1, "data": [[46,47],[56,57]] },
+                { "atlas": 1, "data": [[28,29]] },
+                { "atlas": 2, "data": [[34,35],[48,49],[62,63]] },
+                { "atlas": 3, "data": [[70,71,72,73,74],[81,82,83,84,85],[92,93,94,95,96]] },
+                { "atlas": 6, "data": [[51,52],[61,62]] },
+                { "atlas": 8, "data": [[49,50], [60,61]] }
             ],
 
             entities: [
-                { "id": "bush1", "atlus": 1, "data": [[66,67],[76,77]] }
+                { "id": "bush1", "atlas": 1, "data": [[66,67],[76,77]] }
             ],
 
             grids: [

@@ -8,6 +8,26 @@ function _(elm) { return document.querySelector(elm); }
 function __(elm) { return document.querySelectorAll(elm) }
 
 
+let Easing = {
+    linear(time, begin, change, duration) {
+        return change*(time/=duration) + begin;
+    },
+    easeInQuad(time, begin, change, duration) {
+        return change*(time/=duration)*time + begin;
+    },
+    easeOutQuad(time, begin, change, duration) {
+        return -change *(time/=duration)*(time-2) + begin;
+    },
+    easeInOutQuad(time, begin, change, duration) {
+        if( (time /= duration/2) < 1 ) {
+            return change/2*time*time + begin;
+        }
+        return -change/2 * ( (--time)*(time-2) - 1 ) + begin;
+    }
+}
+
+
+
 /*****************
     Prettify()
 
@@ -59,11 +79,11 @@ function prettify(str) {
 
 // Old way of image scaling.
 // Takes an image, creates a new canvas at X factor larger image than original, then redraws the image to the new canvas at the new size. Returns the new, larger image as an image object (?)
-function scaleImage(img) {
-    let srcCanvas       = document.createElement('canvas');
-    let dstCanvas       = document.createElement('canvas');
-    let srcCtx          = srcCanvas.getContext('2d');
-    let dstCtx          = dstCanvas.getContext('2d');
+function scaleImage(img, factor) {
+    var srcCanvas       = document.createElement('canvas');
+    var dstCanvas       = document.createElement('canvas');
+    var srcCtx          = srcCanvas.getContext('2d');
+    var dstCtx          = dstCanvas.getContext('2d');
 
     // set up source
     srcCanvas.width     = img.width;
@@ -71,31 +91,31 @@ function scaleImage(img) {
     srcCtx.clearRect(0, 0, img.width, img.height);
     srcCtx.drawImage(img, 0, 0);
 
-    let srcData = srcCtx.getImageData(0, 0, img.width, img.height).data;
+    var srcData = srcCtx.getImageData(0, 0, img.width, img.height).data;
 
-    let sw = factor * img.width;
-    let sh = factor * img.height;
+    var sw = factor * img.width;
+    var sh = factor * img.height;
 
     // set up destination
     dstCanvas.width     = sw;
     dstCanvas.height    = sh;
     dstCtx.clearRect(0, 0, sw, sh);
 
-    let dstImgData  = dstCtx.getImageData(0,0,sw,sh);
-    let dstData     = dstImgData.data;
+    var dstImgData  = dstCtx.getImageData(0,0,sw,sh);
+    var dstData     = dstImgData.data;
 
     // factor
-    let srcP = 0;
-    let dstP = 0;
+    var srcP = 0;
+    var dstP = 0;
 
-    for (let y = 0; y < img.height; ++y) {
-        for (let i = 0; i < factor; ++i) {
-            for (let x = 0; x < img.width; ++x) {
+    for (var y = 0; y < img.height; ++y) {
+        for (var i = 0; i < factor; ++i) {
+            for (var x = 0; x < img.width; ++x) {
 
                 srcP = 4 * (y * img.width + x);
 
-                for (let j = 0; j < factor; ++j) {
-                    let tmp = srcP;
+                for (var j = 0; j < factor; ++j) {
+                    var tmp = srcP;
                     dstData[dstP++] = srcData[tmp++];
                     dstData[dstP++] = srcData[tmp++];
                     dstData[dstP++] = srcData[tmp++];
