@@ -40,10 +40,6 @@ let UI = {
 
                 // show desired content
                 _('.tab-container [data-tab="'+tab+'"]').style['display'] = 'block';
-
-                // hide all panel markers
-                this.deselect.call(UI.TilesetsPanel);
-                this.deselect.call(UI.PatternsPanel);
             }
         });
 
@@ -51,43 +47,55 @@ let UI = {
             if( this.deleteMode ) {
                 _('.delete').classList.remove('isActive');
                 this.deleteMode = false;
+                Eventer.dispatch('deleteMode', false);
             }
             else {
                 _('.delete').classList.add('isActive');
                 this.deleteMode = true;
+                Viewport.ghostTile.style.display = 'none';
+                Eventer.dispatch('deleteMode', true);
+
+                // hide all the markers
+                UI.deselectAll();
             }
         } );
 
         _('.export-world').addEventListener('click', () => Eventer.dispatch('export') );
 
-        _('.explode-button').addEventListener('click', () => {
-            if( !this.exploded ) {
-                let zIndex = 0;
+        Eventer.on('patternSelected', () => {
+            this.deleteMode = false;
+            _('.delete').classList.remove('isActive');
+        });
 
-                for(var layer of __('.Viewport canvas')) {
-                    layer.style.transform = `translateZ(${zIndex += 40}px)`;
-                }
-
-                _('.Screen').style.overflow = 'visible';
-                _('main').classList.add('explode');
-
-                this.exploded = true;
-            }
-            else {
-                for(var layer of __('.Viewport canvas')) {
-                    layer.style.transform = 'translateZ(0px)';
-                }
-
-                _('main').classList.remove('explode');
-
-                setTimeout( () => {_('.Screen').style.overflow = 'scroll'}, 1000);
-
-                this.exploded = false;
-            }
-        } );
+        // _('.explode-button').addEventListener('click', () => {
+        //     if( !this.exploded ) {
+        //         let zIndex = 0;
+        //
+        //         for(var layer of __('.Viewport canvas')) {
+        //             layer.style.transform = `translateZ(${zIndex += 40}px)`;
+        //         }
+        //
+        //         _('.Screen').style.overflow = 'visible';
+        //         _('main').classList.add('explode');
+        //
+        //         this.exploded = true;
+        //     }
+        //     else {
+        //         for(var layer of __('.Viewport canvas')) {
+        //             layer.style.transform = 'translateZ(0px)';
+        //         }
+        //
+        //         _('main').classList.remove('explode');
+        //
+        //         setTimeout( () => {_('.Screen').style.overflow = 'scroll'}, 1000);
+        //
+        //         this.exploded = false;
+        //     }
+        // } );
 
         _('.ZoomPanel-slider').addEventListener('change', e => {
-            _('.ZoomPanel-factor').innerHTML = _('.ZoomPanel-slider').value;
+            let val = _('.ZoomPanel-slider').value;
+            _('.ZoomPanel-factor').innerHTML = (25 * Math.pow(2, (val - 1))) + '%';
             Viewport.scale( _('.ZoomPanel-slider').value );
         });
 
@@ -97,16 +105,19 @@ let UI = {
     // Helper function
     getIndex(list, item) {
         let count = 0;
-        for (var l of list) {
+        for(var l of list) {
             if( l == item ) {
                 break;
             }
             count++;
         }
-        return count;
+        return count == list.length ? -1 : count; // if the count is the same as the length of the list, no item was found. Return -1.
     },
 
-    deselect() {
-        this._marker.style.display  = 'none';
+    deselectAll() {
+        UI.CollisionsPanel.deselect();
+        UI.PatternsPanel.deselect();
+        UI.TilesetsPanel.deselect();
+        UI.EntitiesPanel.deselect();
     }
 };

@@ -2,22 +2,29 @@
 'use strict';
 
 UI.TilesetsPanel = {
+
     init(tilesets) {
-        this._tiles     = _('.Tiles');
-        this._tilesets  = null;
-        this._marker    = _('.Tiles .marker');
+        this.container          = _('.Tiles');
+        this.marker             = Object.create(Marker).init();
+
+        this.tilesets           = [];
+        this.isDragging         = false;
+
+        this.currentTileset     = '';
+        this.startTileIdx       = 0;
+        this.endTileIdx         = 0;
+        this.selectedIndexes    = [0,0];
+
+        // add marker
+        this.container.appendChild(this.marker.elm);
 
         this.loadTilesets();
-
-        this._tilesets  = this._tiles.querySelectorAll('img');
-
-        for (var tileset of this._tilesets) {
-            tileset.addEventListener('mousedown', e => this.selectTile(e));
-        }
+        this.setupEvents();
     },
 
     loadTilesets() {
-        // when each image load promise is fulfilled, as it to the tilesets panel.
+        this.tilesets = [];
+
         for(var sprite of Global.tilesetsArray) {
             let _div    = document.createElement('div');
             let _span   = document.createElement('span');
@@ -28,39 +35,78 @@ UI.TilesetsPanel = {
             _div.appendChild(sprite.img);
             _span.appendChild(_text);
 
-            this._tiles.appendChild(_span);
-            this._tiles.appendChild(_div);
+            this.container.appendChild(_span);
+            this.container.appendChild(_div);
+
+            this.tilesets.push(sprite.img);
         }
     },
 
-    selectTile(e) {
-        // find the number of the image tag which was clicked.
-        let idx         = UI.getIndex(this._tiles.querySelectorAll('img'), e.target);
+    setupEvents() {
+        for (var tileset of this.tilesets) {
+            tileset.addEventListener('mousedown', e => {
+                let tIdx = UI.getIndex(this.container.querySelectorAll('img'), e.target);
 
-        // calculate its offset relative to the tiles bounding box.
-        let parentTop   = _('.Tiles').getBoundingClientRect().top;
-        let imgTop      = this._tilesets[idx].getBoundingClientRect().top;
-        let offSet      = (imgTop - parentTop);
+                this.currentTileset     = Global.tilesetsArray[tIdx];
+                this.startTileIdx       = this.getTileIndex(e);
+                this.endTileIdx         = this.startTileIdx;
+                this.selectedIndexes    = [this.startTileIdx, this.endTileIdx];
+                this.isDragging         = true;
+                this.selectTiles(e);
 
-        const sprite    = Global.tilesetsArray[idx];
+            });
 
-        UI.toPlace      = 'tile';
-        UI.selectedTile = sprite.pxToCell(e.offsetX, e.offsetY);
+            tileset.addEventListener('mouseup', e => {
+                this.isDragging     = false;
+
+                let pattern         = Object.create(Pattern).init(this.currentTileset.name, this.selectedIndexes);
+
+                UI.toPlace          = 'pattern';
+                UI.selectedPattern  = pattern;
+
+                Viewport.updateGhostTile(this.currentTileset.name, [this.startTileIdx,this.endTileIdx]);
+                Eventer.dispatch('patternSelected');
+            });
+
+            tileset.addEventListener('mousemove', e => {
+                if( this.isDragging ) {
+                    e.preventDefault(); // prevent dragging of image
+
+                    this.endTileIdx         = this.getTileIndex(e);
+                    this.selectedIndexes    = [this.startTileIdx, this.endTileIdx].sort();
+                    this.selectTiles(e);
+                }
+            });
+        }
+    },
+
+    selectTiles(e) {
+        let sprite          = this.currentTileset;
 
         // takes the new selected tile cell number and gets its rounded x and y values.
-        let relativeTileID = UI.selectedTile - sprite.GID;
-        const coords    = sprite.cellToPx(relativeTileID);
+        let startCoords     = sprite.cellToPx(this.startTileIdx);
+        let endCoords       = sprite.cellToPx(this.endTileIdx);
 
-        // set the ghost tile
-        Viewport.updateGhostTile((idx+1), [[relativeTileID]]);
+        let selectedWidth   = (endCoords.x - startCoords.x) + Global.TILE_SIZE;
+        let selectedHeight  = (endCoords.y - startCoords.y) + Global.TILE_SIZE;
 
-        // move the marker to the correct position and add the index number of the selected tile.
-        this._marker.style.display   = 'block';
-        this._marker.style.top       = offSet + coords.y  * sprite._scale + 'px';
-        this._marker.style.left      = coords.x  * sprite._scale + 'px';
-        this._marker.style.width     = 8 * sprite._scale + 'px';
-        this._marker.style.height    = 8 * sprite._scale + 'px';
+        // calculate its offset relative to the tiles bounding box.
+        let parentTop       = this.container.getBoundingClientRect().top;
+        let imgTop          = this.currentTileset.img.getBoundingClientRect().top;
+        let offSet          = (imgTop - parentTop);
 
-        this._marker.innerHTML = relativeTileID;
+        UI.deselectAll();
+
+        this.marker.render((offSet + startCoords.y * sprite._scale), (startCoords.x * sprite._scale), selectedWidth, selectedHeight);
+        this.marker.show();
+    },
+
+    getTileIndex(e) {
+        // takes the new selected tile cell number and gets its rounded x and y values.
+        return this.currentTileset.pxToCell(e.offsetX, e.offsetY);
+    },
+
+    deselect() {
+        this.marker.hide();
     }
 }

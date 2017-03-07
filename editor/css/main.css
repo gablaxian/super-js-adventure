@@ -15,7 +15,7 @@ body {
 }
 
 body {
-    font-family: 'San Francisco', 'helvetica neue', arial, helvetica, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', sans-serif;
     font-size: 12px;
     min-width:  960px;
     min-height: 540px;
@@ -38,7 +38,8 @@ main {
     color: #222;
 }
 
-.marker {
+.marker,
+.Marker {
     display: none;
     background-color: rgba(0,0,255, 0.3);
     border: 2px solid blue;
@@ -49,6 +50,7 @@ main {
     text-align: center;
     height: 8px;
     width: 8px;
+    pointer-events: none;
 }
 
 .Screen {
@@ -90,7 +92,6 @@ main {
 
 .PanelHeader {
     background-color: #333;
-    border-bottom: 1px solid #fafafa;
     border-top: 1px solid #fafafa;
     color: #fff;
     font-size: 9px;
@@ -117,7 +118,9 @@ main {
     color: #222;
 }
 
-.delete {
+.delete,
+.export-world,
+.explode-button {
     cursor: pointer;
     display: inline-block;
     background: #fff;
@@ -132,12 +135,6 @@ main {
     color: #fff;
 }
 
-.export-world,
-.explode-button {
-    display: inline-block;
-    padding: 4px;
-}
-
 /** Zoom **/
 
 .ZoomPanel {
@@ -147,10 +144,12 @@ main {
 .ZoomPanel-container {
     padding: 0.5rem;
 }
-
+.ZoomPanel-slider {
+    width: 80px;
+}
 .ZoomPanel-factor {
     display: inline-block;
-    font-size: 1rem;
+    font-size: 0.875rem;
 }
 
 /** map properties **/
@@ -181,7 +180,7 @@ main {
 }
 
 .LayersPanel-layers li:hover {
-    background-color: rgba(146, 209, 184, 0.5);
+    box-shadow: inset 0 0 0px 2px rgb(146, 209, 184);
 }
 
 .LayersPanel-layers input {
@@ -191,8 +190,7 @@ main {
 /** Tilesets **/
 
 .TilesetsPanel {
-    flex-grow: 1;
-    height: 50%;
+    height: 40%;
     background-color: #e0e0e0;
 }
 
@@ -227,11 +225,6 @@ main {
     position: relative;
 }
 
-.Patterns div {
-    display: inline-block;
-    margin: 2px;
-}
-
 .Patterns canvas {
     display: inline-block;
     vertical-align: middle;
@@ -247,22 +240,22 @@ main {
 .Collisions div {
     background-color: #fff;
     border: 1px solid #ccc;
-    cursor: pointer;
-    line-height: 42px;
-    padding: 0 4px;
-    text-align: center;
-    width: 48px;
+    padding: 4px;
 }
 
 .Collisions div.isActive {
     border-color: blue;
 }
 
+.Collisions canvas {
+    display: block;
+    pointer-events: none;
+}
+
 /**/
 
 .EntitiesPanel {
     position: relative;
-    flex-grow: 1;
     height: 50%;
     overflow: scroll;
     background-color: #efefef;
@@ -272,22 +265,18 @@ main {
 
 .tabs {
     display: flex;
-    border-bottom: 1px solid #aaa;
     margin-top: 5px;
 }
 
 .tabs [data-tab] {
     background-color: #fff;
     border: 1px solid #ccc;
-    border-radius: 5px 5px 0 0;
-    border-bottom: none;
     color: #333;
     cursor: default;
     flex: 1 33.33%;
     font-weight: 600;
     font-size: 11px;
-    margin: 1px 1px 0 1px;
-    padding: 0.45rem 0;
+    padding: 0.3rem 0;
     text-align: center;
     text-transform: uppercase;
 }
@@ -297,7 +286,8 @@ main {
 }
 
 .tabs [data-tab].active {
-    border: 1px solid #666;
+    background-color: #e0e0e0;
+    border: 1px solid #777;
     border-bottom: none;
 }
 
@@ -315,7 +305,7 @@ main {
     left: 0;
     bottom: 0;
     right: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.6);
     z-index: 10;
 }
 
@@ -343,6 +333,18 @@ main {
     padding: 15px;
     height: 100%;
     overflow: scroll;
+}
+
+.Modal-footer {
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+    padding: 0.5rem 1rem;
+}
+.Button {
+    display: inline-block;
+    padding: 0.2rem 0.3rem;
+    border: 1px solid #aaa;
+    border-radius: 3px;
 }
 
 /* animation stuff */

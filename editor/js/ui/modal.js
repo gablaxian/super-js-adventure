@@ -2,10 +2,11 @@
 'use strict';
 
 UI.Modal = {
-    _overlay       : _('.Overlay'),
-    _modal         : _('.Modal'),
-    _modalContent  : _('.Modal-content'),
-    _close         : _('.Modal-close'),
+    _overlay        : _('.Overlay'),
+    _modal          : _('.Modal'),
+    _modalContent   : _('.Modal-content'),
+    _modalFooter    : _('.Modal-footer'),
+    _close          : _('.Modal-close'),
 
     show(content) {
         this._overlay.style.display     = 'block';

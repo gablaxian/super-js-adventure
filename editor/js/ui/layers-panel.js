@@ -2,6 +2,7 @@
 'use strict';
 
 UI.LayersPanel = {
+    
     init(layers) {
         this._panel     = _('.LayersPanel');
         this._container = this._panel.querySelector('.LayersPanel-layers');

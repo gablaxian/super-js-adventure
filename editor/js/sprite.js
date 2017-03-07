@@ -3,11 +3,12 @@
 
 let Sprite = {
 
-    init(src) {
+    init(name, src) {
         this.img        = new Image();
-        this.img.src    = 'images/tilesets/' + src;
+        this.img.src    = CONFIG.asset_path + src;
 
-        this.name       = src.replace('.png', '').replace('-', ' ');
+        this.name       = name;
+        this.filename   = src;
 
         this.width      = 0;
         this.height     = 0;
@@ -47,7 +48,18 @@ let Sprite = {
         let col = Math.floor( x / (Global.TILE_SIZE * this._scale) );
         let row = Math.floor( y / (Global.TILE_SIZE * this._scale) );
 
-        return (row * this.TILES_WIDE + col) + this.GID;
+        return (row * this.TILES_WIDE + col);
+    },
+
+    idxToCell(idx) {
+        return {
+            row: Math.floor(idx / this.TILES_WIDE),
+            col: idx % this.TILES_WIDE
+        }
+    },
+
+    cellCoordsToIdx(row,col) {
+        return (row * this.TILES_WIDE + col);
     },
 
     scale(scale) {

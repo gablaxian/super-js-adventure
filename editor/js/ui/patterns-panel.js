@@ -2,43 +2,47 @@
 'use strict';
 
 UI.PatternsPanel = {
+
     init(patterns) {
-        this._patterns  = _('.Patterns');
-        this._marker    = _('.Patterns .marker');
+        this.container  = _('.Patterns');
+        this.marker     = Object.create(Marker).init();
+
         this.groups     = [];
         this.patterns   = [];
 
-        for(var obj of patterns) {
+        // add marker
+        this.container.appendChild(this.marker.elm);
+
+        for(var item of patterns) {
 
             // create the pattern
-            let pattern = Object.create(Pattern);
-            pattern.init(obj.atlas, obj.data);
+            let pattern = Object.create(Pattern).init(item.tileset, item.data);
             pattern.render();
 
             this.patterns.push(pattern);
 
-            // add the pattern to its atlas group
-            if( !this.groups[obj.atlas] ) {
-                this.groups[obj.atlas] = [];
+            // add the pattern to its tileset group
+            if( !this.groups[item.tileset] ) {
+                this.groups[item.tileset] = [];
             }
-            this.groups[obj.atlas].push(pattern);
+            this.groups[item.tileset].push(pattern);
         }
 
-        for(var group of this.groups) {
+        for(var group in this.groups) {
             if( !group ) {
                 continue;
             }
 
             let _div = document.createElement('div');
 
-            for(var pattern of group) {
+            for(var pattern of this.groups[group]) {
                 _div.appendChild(pattern.canvas);
             }
 
-            this._patterns.appendChild(_div);
+            this.container.appendChild(_div);
         }
 
-        this._patterns.addEventListener('mousedown', this.selectPattern.bind(this));
+        this.container.addEventListener('mousedown', this.selectPattern.bind(this));
     },
 
     selectPattern(e) {
@@ -59,12 +63,17 @@ UI.PatternsPanel = {
         UI.toPlace          = 'pattern';
         UI.selectedPattern  = pattern;
 
-        Viewport.updateGhostTile(pattern.atlas, pattern.data);
+        Viewport.updateGhostTile(pattern.sprite.name, pattern.data);
 
-        this._marker.style.display   = 'block';
-        this._marker.style.top       = clicked.offsetTop + 'px';
-        this._marker.style.left      = clicked.offsetLeft + 'px';
-        this._marker.style.width     = pattern.SCALED_WIDTH + 'px';
-        this._marker.style.height    = pattern.SCALED_HEIGHT + 'px';
+        UI.deselectAll();
+
+        this.marker.render(clicked.offsetTop, clicked.offsetLeft, pattern.WIDTH, pattern.HEIGHT);
+        this.marker.show();
+
+        Eventer.dispatch('patternSelected');
+    },
+
+    deselect() {
+        this.marker.hide();
     }
 }

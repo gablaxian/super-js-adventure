@@ -2,12 +2,25 @@
 'use strict';
 
 UI.CollisionsPanel = {
+
     init() {
-        this._collisions    = _('.Collisions');
-        this._tiles         = this._collisions.querySelectorAll('div');
+        this._container = _('.Collisions');
+        this._scale     = 3;
+        this._tiles     = [];
+
+        for (let tile of Global.collisionTiles) {
+            let _div = document.createElement('div');
+            _div.appendChild(tile);
+            this._container.appendChild(_div);
+        }
+
+        this._tiles = this._container.querySelectorAll('div');
 
         for (var tile of this._tiles) {
-            tile.addEventListener('click', e => this.selectTile(e));
+            tile.addEventListener('click', e => {
+                this.selectTile(e)
+                Viewport.updateGhostTile();
+            });
         }
     },
 
@@ -19,9 +32,18 @@ UI.CollisionsPanel = {
             tile.classList.remove('isActive');
         }
 
-        clicked.classList.add('isActive');
-
         UI.toPlace              = 'collision';
         UI.selectedCollision    = idx;
+
+        UI.deselectAll();
+
+        clicked.classList.add('isActive');
+        Eventer.dispatch('patternSelected');
+    },
+
+    deselect() {
+        for (var tile of this._tiles) {
+            tile.classList.remove('isActive');
+        }
     }
 }

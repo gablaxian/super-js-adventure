@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en-gb">
 <head>
     <meta charset="utf-8">
+    <meta name="author" content="Graham Smith">
     <title>Super JS Editor</title>
 
     <link rel="stylesheet" type="text/css" href="css/main.css">
-</head>
 
+    <link rel="icon" href="/favicon.png">
+</head>
 <body>
 
     <main>
@@ -24,8 +26,8 @@
                     <div class="PanelHeader">Controls</div>
                     <div class="InfoPanel-container">
                         <span class="delete">erase</span>
-                        <button class="export-world">export world</button>
-                        <button class="explode-button">Boom</button>
+                        <span class="export-world">export world</span>
+                        <!-- <button class="explode-button">Boom</button> -->
                     </div>
                 </div>
 
@@ -34,7 +36,7 @@
                     <div class="PanelHeader">Zoom</div>
                     <div class="ZoomPanel-container">
                         <input class="ZoomPanel-slider" type="range" name="zoom-slider" min="1" max="5" step="1" value="3">
-                        <span class="ZoomPanel-factor">3</span>
+                        <span class="ZoomPanel-factor">100%</span>
                     </div>
                 </div>
 
@@ -53,6 +55,7 @@
                 <!-- Tilesets -->
                 <div class="TilesetsPanel">
                     <div class="PanelHeader">Tilesets</div>
+
                     <div class="tabs">
                         <div data-tab="tiles" class="active">Tiles</div>
                         <div data-tab="patterns">Patterns</div>
@@ -61,33 +64,22 @@
 
                     <div class="tab-container">
                         <div data-tab="tiles">
-                            <div class="Tiles">
-                                <div class="marker"></div>
-                            </div>
-
+                            <div class="Tiles"></div>
                         </div>
                         <div data-tab="patterns">
-                            <div class="Patterns">
-                                <div class="marker"></div>
-                            </div>
+                            <div class="Patterns"></div>
                         </div>
                         <div data-tab="collisions">
-                            <div class="Collisions">
-                                <div>none</div>
-                                <div>full</div>
-                                <div>tl - br</div>
-                                <div>tr - bl</div>
-                                <div></div>
-                            </div>
+                            <div class="Collisions"></div>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Entities -->
                 <div class="EntitiesPanel">
                     <div class="PanelHeader">Entities</div>
                     <div class="EntitiesPanel-container"></div>
-                    <div class="marker"></div>
                 </div>
             </div>
         </div>
@@ -96,6 +88,11 @@
         <div class="Modal">
             <div class="Modal-close">close</div>
             <div class="Modal-content"></div>
+            <div class="Modal-footer">
+                <div class="Button">
+                    <svg aria-hidden="true" class="octicon octicon-clippy" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path fill-rule="evenodd" d="M2 13h4v1H2v-1zm5-6H2v1h5V7zm2 3V8l-3 3 3 3v-2h5v-2H9zM4.5 9H2v1h2.5V9zM2 12h2.5v-1H2v1zm9 1h1v2c-.02.28-.11.52-.3.7-.19.18-.42.28-.7.3H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2h3c.55 0 1 .45 1 1v5h-1V6H1v9h10v-2zM2 5h8c0-.55-.45-1-1-1H8c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1H3c-.55 0-1 .45-1 1z"></path></svg>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -104,13 +101,17 @@
         Scripts
     ******************************************-->
 
+    <!-- Helpers -->
     <script src="js/helpers.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/eventer.js"></script>
 
+    <!-- DB -->
     <script src="js/db.js"></script>
 
     <!-- UI -->
     <script src="js/ui/ui.js"></script>
+    <script src="js/ui/marker.js"></script>
     <script src="js/ui/modal.js"></script>
     <script src="js/ui/maps-panel.js"></script>
     <script src="js/ui/layers-panel.js"></script>
@@ -119,7 +120,7 @@
     <script src="js/ui/collisions-panel.js"></script>
     <script src="js/ui/entities-panel.js"></script>
 
-
+    <!-- Engine -->
     <script src="js/sprite.js"></script>
     <script src="js/pattern.js"></script>
     <script src="js/entity.js"></script>
@@ -132,11 +133,13 @@
     <script src="js/editor.js"></script>
 
     <script>
-        let config = {
+        const CONFIG = {
             version: "0.1",
 
+            asset_path: 'images/tilesets/',
+
             maps: [
-                { "name": "overworld",    "width": (32 * 16),   "height": (22 * 12) },
+                { "name": "overworld",    "width": (32 * 16),   "height": (22 * 12) },     // 32 tiles * 16 rooms by 22 tiles * 12 rooms (512x264 tiles)
                 { "name": "dungeon1",     "width": (32 * 6),    "height": (22 * 6) },
                 { "name": "dungeon2",     "width": (32 * 4),    "height": (22 * 8) },
                 { "name": "dungeon3",     "width": (32 * 5),    "height": (22 * 6) },
@@ -146,7 +149,7 @@
                 { "name": "dungeon7",     "width": (32 * 6),    "height": (22 * 8) },
                 { "name": "dungeon8",     "width": (32 * 5),    "height": (22 * 8) },
                 { "name": "dungeon9",     "width": (32 * 8),    "height": (22 * 8) },
-                { "name": "cave1",        "width": (32 * 1),    "height": (22 * 1) }
+                { "name": "cave1",        "width": (32 * 1),    "height": (22 * 1) },
             ],
 
             // the customisable tileset layers.
@@ -154,41 +157,47 @@
             layers: [
                 { "name": "bg" },
                 { "name": "world" },
-                { "name": "top" }
+                { "name": "entities" },
+                { "name": "top" },
+                { "name": "collision" },
             ],
 
             tilesets: [
-                "overworld-terrain.png",
-                "overworld-cliffs.png",
-                "overworld-entities.png",
-                "entrances.png",
-                "water.png",
-                "caves.png",
-                "underworld-entities.png",
-                "dungeon.png"
+                { "name": "overworld-terrain",     "src": "overworld-terrain.png" },
+                { "name": "overworld-cliffs",      "src": "overworld-cliffs.png" },
+                { "name": "overworld-entities",    "src": "overworld-entities.png" },
+                { "name": "entrances",             "src": "entrances.png" },
+                { "name": "water",                 "src": "water.png" },
+                { "name": "caves",                 "src": "caves.png" },
+                { "name": "underworld-entities",   "src": "underworld-entities.png" },
+                { "name": "dungeon",               "src": "dungeon.png" },
             ],
 
             patterns: [
-                { "atlas": 1, "data": [[46,47],[56,57]] },
-                { "atlas": 1, "data": [[28,29]] },
-                { "atlas": 2, "data": [[34,35],[48,49],[62,63]] },
-                { "atlas": 3, "data": [[70,71,72,73,74],[81,82,83,84,85],[92,93,94,95,96]] },
-                { "atlas": 6, "data": [[51,52],[61,62]] },
-                { "atlas": 8, "data": [[49,50], [60,61]] }
+                { "tileset": "overworld-terrain",    "data": [46,57] },
+                { "tileset": "overworld-terrain",    "data": [28,29] },
+                { "tileset": "overworld-cliffs",     "data": [34,63] },
+                { "tileset": "overworld-entities",   "data": [70,96] },
+                { "tileset": "caves",                "data": [51,62] },
+                { "tileset": "dungeon",              "data": [49,61] },
             ],
 
             entities: [
-                { "id": "bush1", "atlas": 1, "data": [[66,67],[76,77]] }
+                { "id": "bush1", "tileset": "overworld-terrain", "data": [66,77] },
+            ],
+
+            animations: [
+                { "tileset": "water", "tiles": [119,120,121] },
             ],
 
             grids: [
                 [8,8],
-                [256,176] // the size of one room
+                [256,176], // the size of one room
             ]
         }
 
         // Begin!
-        Editor.init(config);
+        Editor.init(CONFIG);
     </script>
 </body>
 </html>

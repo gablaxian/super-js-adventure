@@ -55,5 +55,12 @@ let DB = {
             // console.log(e.target.result);
             callback(e.target.result);
         }
+    },
+
+    clear() {
+        let transaction = this.db.transaction(this.storeName, 'readwrite');
+        let store       = transaction.objectStore(this.storeName);
+
+        store.clear();
     }
 }

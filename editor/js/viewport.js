@@ -24,7 +24,7 @@ let Viewport = {
         this.isDragging     = false;
 
         // setup grids
-        for(var gridConfig of config.grids) {
+        for(var gridConfig of CONFIG.grids) {
             let grid = Object.create(Grid);
             grid.init(0, 0, gridConfig[0], gridConfig[1]);
 
@@ -70,7 +70,7 @@ let Viewport = {
     },
 
     setupEvents() {
-        this._viewport.addEventListener('mouseup',   e => {
+        this._viewport.addEventListener('mouseup', e => {
             this.isDragging = false;
         });
 
@@ -82,17 +82,16 @@ let Viewport = {
                 return;
             }
 
-            if( UI.toPlace == 'tile' ) {
-                this.placeTile();
-            }
-            else if( UI.toPlace == 'pattern' ) {
-                this.placePattern();
-            }
-            else if( UI.toPlace == 'collision' ) {
-                this.placeCollision();
-            }
-            else if( UI.toPlace == 'entity' ) {
-                this.placeEntity();
+            switch (UI.toPlace) {
+                case 'pattern':
+                    this.placePattern();
+                    break;
+                case 'collision':
+                    this.placeCollision();
+                    break;
+                case 'entity':
+                    this.placeEntity();
+                    break;
             }
         });
 
@@ -109,24 +108,27 @@ let Viewport = {
                     return;
                 }
 
-                if( UI.toPlace == 'tile' ) {
-                    this.placeTile();
-                }
-                else if( UI.toPlace == 'pattern' ) {
-                    this.placePattern();
-                }
-                else if( UI.toPlace == 'collision' ) {
-                    this.placeCollision();
-                }
-                else if( UI.toPlace == 'entity' ) {
-                    this.placeEntity();
+                switch (UI.toPlace) {
+                    case 'pattern':
+                        this.placePattern();
+                        break;
+                    case 'collision':
+                        this.placeCollision();
+                        break;
+                    case 'entity':
+                        this.placeEntity();
+                        break;
                 }
             }
         });
 
-        Eventer.on('selectMap',     idx => { this.setupMap(Global.world.maps[idx]); });
-        Eventer.on('selectLayer',   () => this.currentMap.selectedLayer = UI.selectedLayer );
-        Eventer.on('toggleLayer',   (idx, checked) => {
+        Eventer.on('selectMap', idx => {
+            this.setupMap(Global.world.maps[idx]);
+        });
+        Eventer.on('selectLayer', idx => {
+            this.currentMap.selectedLayer = UI.selectedLayer;
+        });
+        Eventer.on('toggleLayer', (idx, checked) => {
             if( checked ) {
                 this.currentMap.layers[idx].show();
             }
@@ -140,13 +142,13 @@ let Viewport = {
         this._scale = scale;
 
         this.currentMap.scale(scale);
-        for (var grid of this.grids) {
+        for(var grid of this.grids) {
             grid.scale(scale);
             grid.render();
         }
 
-        this._viewport.style['width']    = (this.currentMap.getWidthInPx() * scale) + 'px';
-        this._viewport.style['height']   = (this.currentMap.getHeightInPx() * scale) + 'px';
+        this._viewport.style['width'] = (this.currentMap.getWidthInPx() * scale) + 'px';
+        this._viewport.style['height'] = (this.currentMap.getHeightInPx() * scale) + 'px';
     },
 
     center() {
@@ -173,27 +175,26 @@ let Viewport = {
         this._viewport.style['transform']   = transform;
     },
 
+    //--------------------------------------------------------------------
+
     deleteTile() {
         const clickedX  = (this.mouseX / this._scale);
         const clickedY  = (this.mouseY / this._scale);
         const cell      = this.currentMap.pxToCell(clickedX, clickedY);
 
-        this.currentMap.addTile(cell, null);
-        this.currentMap.renderTile(cell);
+        if( this.currentMap.layers[UI.selectedLayer].name == 'entities' ) {
+            this.currentMap.layers[UI.selectedLayer].deleteEntityByPosition(clickedX, clickedY);
+            this.currentMap.layers[UI.selectedLayer].render();
+        } else {
+            this.currentMap.addTile(cell, null);
+            this.currentMap.renderTile(cell);
+        }
 
-        Eventer.dispatch('addTile');
+
+        Eventer.dispatch('deleteTile');
     },
 
-    placeTile() {
-        const clickedX  = (this.mouseX / this._scale);
-        const clickedY  = (this.mouseY / this._scale);
-        const cell      = this.currentMap.pxToCell(clickedX, clickedY);
-
-        this.currentMap.addTile(cell, UI.selectedTile);
-        this.currentMap.renderTile(cell);
-
-        Eventer.dispatch('addTile');
-    },
+    //--------------------------------------------------------------------
 
     placePattern(pattern) {
         const clickedX  = (this.mouseX / this._scale);
@@ -225,18 +226,13 @@ let Viewport = {
 
         let {x, y} = this.currentMap.cellToPx(cell);
 
-        // clone the entity
-        let newEntity = Object.create(UI.selectedEntity);
-        newEntity.x = x;
-        newEntity.y = y;
-
-        console.log(newEntity.x, newEntity.y);
-
-        this.currentMap.addEntity(x, y, newEntity);
-        this.currentMap.renderEntity(newEntity);
+        this.currentMap.addEntity(UI.selectedEntity, x, y);
+        this.currentMap.renderEntity();
 
         Eventer.dispatch('addEntity');
     },
+
+    //--------------------------------------------------------------------
 
     createGhostTile() {
         this.ghostTile  = document.createElement('canvas');
@@ -248,28 +244,37 @@ let Viewport = {
         this.ghostTile.style.opacity        = '0.6';
         this.ghostTile.style.pointerEvents  = 'none';
 
-        // context.fillStyle = 'rgba(30,30,30)';
-        // context.fillRect(0, 0, 8 * Global.scale, 8 * Global.scale);
-
         console.log('ghost tile created');
 
         this._viewport.appendChild(this.ghostTile);
     },
 
-    updateGhostTile(atlas, tiles) {
-        let newPattern  = Object.create(Pattern);
-
-        console.log(atlas, tiles);
-        newPattern.init(atlas, tiles);
-        newPattern.render();
-
+    updateGhostTile(tileset, tiles) {
         let context = this.ghostTile.getContext('2d');
 
-        this.ghostTile.width    = newPattern.WIDTH * Global.scale;
-        this.ghostTile.height   = newPattern.HEIGHT * Global.scale;
+        if( UI.toPlace == 'collision' ) {
+            let cTile = Global.collisionTiles[UI.selectedCollision];
 
-        context.clearRect(0, 0, this.ghostTile.width, this.ghostTile.height)
-        context.drawImage(newPattern.canvas, 0, 0, newPattern.WIDTH * Global.scale, newPattern.HEIGHT * Global.scale);
+            this.ghostTile.width    = cTile.width * Global.scale;
+            this.ghostTile.height   = cTile.height * Global.scale;
+
+            context.clearRect(0, 0, this.ghostTile.width, this.ghostTile.height)
+            context.drawImage(cTile, 0, 0, cTile.width * Global.scale, cTile.height * Global.scale);
+        }
+        else {
+            let newPattern  = Object.create(Pattern);
+
+            newPattern.init(tileset, tiles);
+            newPattern.render();
+
+            this.ghostTile.width    = newPattern.WIDTH * Global.scale;
+            this.ghostTile.height   = newPattern.HEIGHT * Global.scale;
+
+            context.clearRect(0, 0, this.ghostTile.width, this.ghostTile.height)
+            context.drawImage(newPattern.canvas, 0, 0, newPattern.WIDTH * Global.scale, newPattern.HEIGHT * Global.scale);
+        }
+
+        this.ghostTile.style.display = 'block';
     },
 
     moveGhostTile() {
@@ -280,6 +285,8 @@ let Viewport = {
 
         this.ghostTile.style.transform = 'translate3d('+x+'px, '+y+'px, 0)';
     },
+
+    //--------------------------------------------------------------------
 
     render() {
         let startTime = window.performance.now();
