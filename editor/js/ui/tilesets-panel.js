@@ -52,6 +52,7 @@ UI.TilesetsPanel = {
                 this.endTileIdx         = this.startTileIdx;
                 this.selectedIndexes    = [this.startTileIdx, this.endTileIdx];
                 this.isDragging         = true;
+                console.log(this.endTileIdx);
                 this.selectTiles(e);
 
             });
@@ -60,11 +61,12 @@ UI.TilesetsPanel = {
                 this.isDragging     = false;
 
                 let pattern         = Object.create(Pattern).init(this.currentTileset.name, this.selectedIndexes);
+                pattern.render();
 
                 UI.toPlace          = 'pattern';
                 UI.selectedPattern  = pattern;
 
-                Viewport.updateGhostTile(this.currentTileset.name, [this.startTileIdx,this.endTileIdx]);
+                Viewport.updateGhostTile();
                 Eventer.dispatch('patternSelected');
             });
 

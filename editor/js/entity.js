@@ -11,9 +11,6 @@ let Entity = {
 
         this.sprite         = Utils.getTilesetByName(tilesetName);
 
-        this.startTileIdx   = this.data[0];
-        this.endTileIdx     = this.data[(this.data.length - 1)];
-
         // I’m lazy
         Pattern.extrapolateEndPoints.call(this);
 

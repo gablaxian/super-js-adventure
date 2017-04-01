@@ -3,15 +3,19 @@
 
 // use this as a global repo for UI values.
 let UI = {
+
     init(config) {
         config          = config            || {};
         config.maps     = config.maps       || [];
         config.layers   = config.layers     || [];
         config.tilesets = config.tilesets   || [];
 
+        // states
         this.exploded   = false;
         this.deleteMode = false;
+        this.fillMode   = false;
 
+        // init
         UI.MapsPanel.init(config.maps);
         UI.LayersPanel.init(config.layers);
         UI.TilesetsPanel.init(config.tilesets);
@@ -43,7 +47,20 @@ let UI = {
             }
         });
 
-        _('.delete').addEventListener('click', () => {
+        _('.fill').addEventListener('click', e => {
+            if( this.fillMode ) {
+                _('.fill').classList.remove('isActive');
+                this.fillMode = false;
+                Eventer.dispatch('fillMode', false);
+            }
+            else {
+                _('.fill').classList.add('isActive');
+                this.fillMode = true;
+                Eventer.dispatch('fillMode', true);
+            }
+        });
+
+        _('.delete').addEventListener('click', e => {
             if( this.deleteMode ) {
                 _('.delete').classList.remove('isActive');
                 this.deleteMode = false;
@@ -60,7 +77,7 @@ let UI = {
             }
         } );
 
-        _('.export-world').addEventListener('click', () => Eventer.dispatch('export') );
+        _('.export-world').addEventListener('click', e => Eventer.dispatch('export') );
 
         Eventer.on('patternSelected', () => {
             this.deleteMode = false;
@@ -96,6 +113,8 @@ let UI = {
         _('.ZoomPanel-slider').addEventListener('change', e => {
             let val = _('.ZoomPanel-slider').value;
             _('.ZoomPanel-factor').innerHTML = (25 * Math.pow(2, (val - 1))) + '%';
+
+            Global.scale = _('.ZoomPanel-slider').value;
             Viewport.scale( _('.ZoomPanel-slider').value );
         });
 

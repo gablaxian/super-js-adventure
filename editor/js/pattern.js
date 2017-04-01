@@ -12,16 +12,22 @@ let Pattern = {
 
     init(tilesetName, data) {
         this.tilesetName    = tilesetName;
-        this.data           = data.reduce((a, b) => a.concat(b), []).sort();
+        this.data           = data;
         this.scaleValue     = 3;
 
         this.sprite         = Utils.getTilesetByName(tilesetName);
 
-        this.startTileIdx   = this.data[0];
-        this.endTileIdx     = this.data[(this.data.length - 1)];
 
-        //
-        this.extrapolateEndPoints();
+        // if the array has sub arrays, the pattern has been explicitly created. Grab the width and height from the sub array sizes, reduce the array and skip the rest.
+        if( Array.isArray(this.data[0]) ) {
+            this.TILES_WIDE = this.data[0].length;
+            this.TILES_HIGH = this.data.length;
+
+            this.data       = this.data.reduce((a, b) => a.concat(b), []);
+        }
+        else {
+            this.extrapolateEndPoints();
+        }
 
         this.WIDTH          = this.TILES_WIDE * Global.TILE_SIZE;
         this.HEIGHT         = this.TILES_HIGH * Global.TILE_SIZE;
@@ -39,6 +45,13 @@ let Pattern = {
 
     // We need to take into account that the start and end tiles may be on any given corner of a rectangle. i.e. dragging from bottom-left, bottom-right, etc...
     extrapolateEndPoints() {
+
+        // reduce array down to a single array.
+        let reducedData     = this.data.reduce((a, b) => a.concat(b), []).sort((a, b) =>  a - b);
+
+        this.startTileIdx   = reducedData[0];
+        this.endTileIdx     = reducedData[(reducedData.length - 1)];
+
         // based on the atlas' dimensions, figure out the rows and columns from the start and end tiles provided.
         let { row: row1, col: col1 } = this.sprite.idxToCell(this.startTileIdx);
         let { row: row2, col: col2 } = this.sprite.idxToCell(this.endTileIdx);
@@ -77,11 +90,13 @@ let Pattern = {
         for (let row = 0; row < this.TILES_HIGH; row++) {
             for (let col = 0; col < this.TILES_WIDE; col++) {
 
-                let cell        = (row * this.TILES_WIDE) + col;
-                let tile        = this.data[cell];
-                spriteCoords    = this.sprite.cellToPx(tile);
+                let cell    = (row * this.TILES_WIDE) + col;
+                let tile    = this.data[cell];
 
-                this.context.drawImage(this.sprite.img, spriteCoords.x, spriteCoords.y, 8, 8, (col * 8), (row * 8), 8, 8);
+                if( tile !== null ) {
+                    spriteCoords = this.sprite.cellToPx(tile);
+                    this.context.drawImage(this.sprite.img, spriteCoords.x, spriteCoords.y, 8, 8, (col * 8), (row * 8), 8, 8);
+                }
             }
         }
     }

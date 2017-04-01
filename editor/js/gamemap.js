@@ -73,6 +73,15 @@ let GameMap = {
         }
     },
 
+    idxToCell(idx) {
+        return {
+            row: Math.floor(idx / this.TILES_WIDE),
+            col: idx % this.TILES_WIDE
+        }
+    },
+
+    //--------------------------------------------------------------------
+
     addLayer(name, tilesetNames, data) {
         name = name || 'Layer ' + (this.layers.length + 1);
 
@@ -107,8 +116,11 @@ let GameMap = {
                 let newCell     = (row * layer.TILES_WIDE) + col + cell;
                 let tileIndex   = pattern.data[ (row * pattern.TILES_WIDE) + col ];
 
-                layer.addTile(newCell, tileIndex, pattern.sprite.name);
-                layer.renderTile(newCell);
+                if( tileIndex !== null ) {
+                    layer.addTile(newCell, tileIndex, pattern.sprite.name);
+                    layer.renderTile(newCell);
+                }
+
             }
         }
     },
@@ -123,6 +135,37 @@ let GameMap = {
     addEntity(entity, x, y) {
         let layer = this.getLayer('entities');
         return layer.addEntity(entity.id, x, y);
+    },
+
+    // pattern the pattern! Patternception!
+    repeatPattern(cellArray, pattern) {
+        let layer                   = this.layers[this.selectedLayer];
+
+        let reducedArray            = cellArray.reduce((a, b) => a.concat(b), []).sort((a, b) =>  a - b);
+        let startIdx                = reducedArray[0];
+        let endIdx                  = reducedArray[(reducedArray.length - 1)];
+
+        let { row: row1, col: col1 }= this.idxToCell(startIdx);
+        let { row: row2, col: col2 }= this.idxToCell(endIdx);
+
+        let topLeftCoords           = { row: Math.min(row1, row2), col: Math.min(col1, col2) };
+        let bottomRightCoords       = { row: Math.max(row1, row2), col: Math.max(col1, col2) };
+
+        let selectedCols            = Math.abs(col2 - col1) + 1;
+        let selectedRows            = Math.abs(row2 - row1) + 1;
+
+        // now how many times does the pattern fit into the width/height of the selected shape?
+        let patternCols             = Math.ceil(selectedCols / pattern.TILES_WIDE);
+        let patternRows             = Math.ceil(selectedRows / pattern.TILES_HIGH);
+
+        // console.log(selectedCols, selectedRows, patternCols, patternRows);
+
+        for (var row = 0; row < patternRows; row++) {
+            for (var col = 0; col < patternCols; col++) {
+                let newCell = startIdx + (row * pattern.TILES_HIGH * layer.TILES_WIDE) + (col * pattern.TILES_WIDE);
+                this.addPattern(newCell, pattern);
+            }
+        }
     },
 
     //--------------------------------------------------------------------

@@ -25,6 +25,7 @@
                 <div class="InfoPanel">
                     <div class="PanelHeader">Controls</div>
                     <div class="InfoPanel-container">
+                        <span class="fill">fill</span>
                         <span class="delete">erase</span>
                         <span class="export-world">export world</span>
                         <!-- <button class="explode-button">Boom</button> -->
@@ -139,7 +140,7 @@
             asset_path: 'images/tilesets/',
 
             maps: [
-                { "name": "overworld",    "width": (32 * 16),   "height": (22 * 12) },     // 32 tiles * 16 rooms by 22 tiles * 12 rooms (512x264 tiles)
+                { "name": "overworld",    "width": (32 * 16),   "height": (22 * 8) },     // 32 tiles * 16 rooms by 22 tiles * 8 rooms (512x176 tiles)
                 { "name": "dungeon1",     "width": (32 * 6),    "height": (22 * 6) },
                 { "name": "dungeon2",     "width": (32 * 4),    "height": (22 * 8) },
                 { "name": "dungeon3",     "width": (32 * 5),    "height": (22 * 6) },
@@ -165,21 +166,21 @@
             tilesets: [
                 { "name": "overworld-terrain",     "src": "overworld-terrain.png" },
                 { "name": "overworld-cliffs",      "src": "overworld-cliffs.png" },
-                { "name": "overworld-entities",    "src": "overworld-entities.png" },
-                { "name": "entrances",             "src": "entrances.png" },
                 { "name": "water",                 "src": "water.png" },
-                { "name": "caves",                 "src": "caves.png" },
-                { "name": "underworld-entities",   "src": "underworld-entities.png" },
-                { "name": "dungeon",               "src": "dungeon.png" },
+                { "name": "overworld-flora",       "src": "overworld-flora.png" },
+                // { "name": "overworld-entities",    "src": "overworld-entities.png" },
+                // { "name": "entrances",             "src": "entrances.png" },
+                // { "name": "caves",                 "src": "caves.png" },
+                // { "name": "underworld-entities",   "src": "underworld-entities.png" },
+                // { "name": "dungeon",               "src": "dungeon.png" },
             ],
 
             patterns: [
                 { "tileset": "overworld-terrain",    "data": [46,57] },
-                { "tileset": "overworld-terrain",    "data": [28,29] },
-                { "tileset": "overworld-cliffs",     "data": [34,63] },
-                { "tileset": "overworld-entities",   "data": [70,96] },
-                { "tileset": "caves",                "data": [51,62] },
-                { "tileset": "dungeon",              "data": [49,61] },
+                { "tileset": "overworld-terrain",    "data": [[87,98],[98,87]] },
+                { "tileset": "overworld-cliffs",     "data": [[14,15],[34,35],[48,49],[62,63]] },
+                { "tileset": "overworld-cliffs",     "data": [[82,30,31,28],[96,44,45,42]] },
+                { "tileset": "overworld-cliffs",     "data": [[29,33,32,83],[43,47,46,97]] },
             ],
 
             entities: [

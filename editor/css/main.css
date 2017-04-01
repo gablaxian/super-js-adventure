@@ -118,6 +118,7 @@ main {
     color: #222;
 }
 
+.fill,
 .delete,
 .export-world,
 .explode-button {
@@ -129,6 +130,7 @@ main {
     font-size: 11px;
     padding: 4px;
 }
+.fill.isActive,
 .delete.isActive {
     background-color: #444;
     border-color: #111;
