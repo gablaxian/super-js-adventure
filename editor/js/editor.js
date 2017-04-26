@@ -331,10 +331,13 @@ let Editor = {
         // add tilesets
         world.tilesets = [];
         for (var tileset of Global.tilesetsArray) {
+            let gid = atlasGIDs[ tileset.name ] || 0;
             world.tilesets.push({
+                id: tileset.name,
                 name: tileset.filename,
                 width: tileset.width,
-                height: tileset.height
+                height: tileset.height,
+                gid: gid
             });
         }
 
@@ -343,8 +346,10 @@ let Editor = {
 
         // loop over the maps
         for (var map of Global.world.maps) {
-            world.maps[map.name]            = {};
-            world.maps[map.name]['layers']  = [];
+            world.maps[map.name]                = {};
+            world.maps[map.name]['layers']      = [];
+            world.maps[map.name]['tiles_wide']  = map.TILES_WIDE;
+            world.maps[map.name]['tiles_high']  = map.TILES_HIGH;
 
             // loop over the layers
             for (var layer of map.layers) {
