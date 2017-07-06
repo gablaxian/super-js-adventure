@@ -84,6 +84,16 @@ let UI = {
             _('.delete').classList.remove('isActive');
         });
 
+        Eventer.on('fillMode', () => {
+            this.deleteMode = false;
+            _('.delete').classList.remove('isActive');
+        });
+
+        Eventer.on('deleteMode', () => {
+            this.fillMode = false;
+            _('.fill').classList.remove('isActive');
+        });
+
         // _('.explode-button').addEventListener('click', () => {
         //     if( !this.exploded ) {
         //         let zIndex = 0;

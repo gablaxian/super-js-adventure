@@ -166,13 +166,11 @@
             tilesets: [
                 { "name": "overworld-terrain",     "src": "overworld-terrain.png" },
                 { "name": "overworld-cliffs",      "src": "overworld-cliffs.png" },
-                { "name": "water",                 "src": "water.png" },
                 { "name": "overworld-flora",       "src": "overworld-flora.png" },
-                // { "name": "overworld-entities",    "src": "overworld-entities.png" },
-                // { "name": "entrances",             "src": "entrances.png" },
-                // { "name": "caves",                 "src": "caves.png" },
-                // { "name": "underworld-entities",   "src": "underworld-entities.png" },
-                // { "name": "dungeon",               "src": "dungeon.png" },
+                { "name": "water",                 "src": "water.png" },
+                { "name": "misc",                  "src": "misc.png" },
+                { "name": "caves",                 "src": "caves.png" },
+                { "name": "dungeon",               "src": "dungeon.png" },
             ],
 
             patterns: [
@@ -185,10 +183,15 @@
 
             entities: [
                 { "id": "bush1", "tileset": "overworld-terrain", "data": [66,77] },
+                { "id": "grass", "tileset": "overworld-terrain", "data": [82,93] },
             ],
 
             animations: [
-                { "tileset": "water", "tiles": [119,120,121] },
+                { "tileset": "overworld-terrain", "tiles": [101,102,103] },
+                { "tileset": "water", "tiles": [46,74,102] },
+                { "tileset": "water", "tiles": [47,75,103] },
+                { "tileset": "water", "tiles": [60,88,116] },
+                { "tileset": "water", "tiles": [61,89,117] },
             ],
 
             grids: [

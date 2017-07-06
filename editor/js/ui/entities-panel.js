@@ -33,7 +33,7 @@ UI.EntitiesPanel = {
 
             UI.deselectAll();
 
-            this.marker.render(entity.canvas.offsetTop, entity.offsetLeft, entity.WIDTH, entity.HEIGHT);
+            this.marker.render(entity.canvas.offsetTop, entity.canvas.offsetLeft, entity.WIDTH, entity.HEIGHT);
             this.marker.show();
             Eventer.dispatch('patternSelected');
         }

@@ -330,14 +330,16 @@ let Editor = {
 
         // add tilesets
         world.tilesets = [];
+
         for (var tileset of Global.tilesetsArray) {
             let gid = atlasGIDs[ tileset.name ] || 0;
+
             world.tilesets.push({
-                id: tileset.name,
-                name: tileset.filename,
-                width: tileset.width,
+                id:     tileset.name,
+                name:   tileset.filename,
+                width:  tileset.width,
                 height: tileset.height,
-                gid: gid
+                gid:    gid
             });
         }
 
@@ -381,7 +383,18 @@ let Editor = {
         }
 
         // add animations
-        world.animations = this.animations;
+        world.animations = [];
+
+        for(let obj of this.animations) {
+            let gid     = atlasGIDs[ obj.tileset ] || 0;
+            let newArr  = [];
+
+            for(let i = 0; i < obj.tiles.length; i++) {
+                newArr.push(obj.tiles[i] + gid);
+            }
+
+            world.animations.push(newArr);
+        }
 
         // I now know that JSON.stringify does have a way to prettify code (third param), but in this case it’s too eager.
         // It also splits the arrays by their commas which makes for large numbers of lines; precisely what I’m trying to avoid.
