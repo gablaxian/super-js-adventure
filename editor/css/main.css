@@ -130,6 +130,9 @@ main {
     font-size: 11px;
     padding: 4px;
 }
+.InfoPanel-container span:active {
+    background: #eee;
+}
 .fill.isActive,
 .delete.isActive {
     background-color: #444;

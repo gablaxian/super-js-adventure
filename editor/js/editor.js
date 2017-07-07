@@ -369,7 +369,7 @@ let Editor = {
                 else {
                     for (var i = 0; i < layer.data.length; i++) {
                         let gid = atlasGIDs[ layer.tilesetNames[i] ] || 0;
-                        newIndexes.push( parseInt( layer.data[i] + gid ) );
+                        newIndexes.push( layer.data[i] === null ? null : parseInt( layer.data[i] + gid ) );
                     }
                 }
 
