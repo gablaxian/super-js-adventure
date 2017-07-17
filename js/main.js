@@ -1,23 +1,7 @@
 
 'use strict';
 
-// a few globals for now.
-const SCREEN_WIDTH      = 256;
-const SCREEN_HEIGHT     = 224;
-
-const ROOM_WIDTH        = 256;
-const ROOM_HEIGHT       = 176;
-
-const TILE_SIZE         = 8;
-
-const NUM_TILES_WIDE    = ROOM_WIDTH / TILE_SIZE;
-const NUM_TILES_HIGH    = ROOM_HEIGHT / TILE_SIZE; // we want the HUD space at the top
-const HUD_HEIGHT        = 6 * TILE_SIZE;
-
-const DEBUG = 0;
-
-//
-let Game = {
+const Game = {
 
     SCALE_VALUE: 2,
 
@@ -39,27 +23,31 @@ let Game = {
         this.screenAnimating = false;
 
         //
-        this.spritesheets   = [];
+        this.tilesets       = [];
+        this.spritesheets   = {};
         this.audio          = {};
-        this.fonts          = [];
 
         //
         this.player         = null;
-        this.entities       = [];
+        this.enemies        = [];
 
         //
         this.animationTiles = [];
         this.tileSequences  = {};
 
+        this.tweens         = [];
+
         //
-        this.state          = 'start';
+        this.state          = GAME_STATE.START;
 
         // Initialise!
         this.loadAssets()
         .then( () => this.setupGame() )
         .then( () => {
-            console.log('Game started');
-            this.lastTime = window.performance.now();
+
+            this.state      = GAME_STATE.PLAYING
+            this.lastTime   = window.performance.now();
+
             requestAnimationFrame(this.render.bind(this));
         });
     },
@@ -68,20 +56,20 @@ let Game = {
 
         const promises = [];
 
-        // Images
-        for (let tileset of world.tilesets) {
-            let id = tileset.id;
+        // Tilesets
+        for( var tileset of world.tilesets ) {
             let obj = {
-                "filename": tileset.name,
-                "img": new Image(),
-                "width": tileset.width,
-                "height": tileset.height,
-                "gid": tileset.gid,
-                "TILES_WIDE": tileset.width / TILE_SIZE
+                "id":           tileset.id,
+                "filename":     tileset.name,
+                "img":          new Image(),
+                "width":        tileset.width,
+                "height":       tileset.height,
+                "gid":          tileset.gid,
+                "TILES_WIDE":   tileset.width / TILE_SIZE
             }
             obj.img.src = 'editor/images/tilesets/'+tileset.name;
 
-            this.spritesheets.push(obj);
+            this.tilesets.push(obj);
 
             let p = new Promise( (resolve, reject) => {
                 obj.img.onload = function() {
@@ -92,37 +80,72 @@ let Game = {
             promises.push(p);
         }
 
+        // Spritesheets
+        for( var spritesheet of ASSETS.images ) {
+            let obj = {
+                "id":           spritesheet.id,
+                "filename":     spritesheet.name,
+                "img":          new Image()
+            }
+            obj.img.src = spritesheet.url;
+
+            this.spritesheets[spritesheet.id] = obj;
+
+            let p = new Promise( (resolve, reject) => {
+                obj.img.onload = function() {
+                    obj.width   = this.width;
+                    obj.height  = this.height;
+
+                    resolve(this);
+                }
+            });
+
+            promises.push(p);
+        }
+
+        // Audio
+        for( var audio of ASSETS.audio ) {
+            //
+        }
+
         return Promise.all(promises);
 
     },
 
     setupGame() {
 
-        this.player = new Link(100, 100);
-
-        // Set the starting grid area
-        Map.init('overworld', [7,7]);
-
-        // Setup the Input
-        Input.init();
-
-        // set the game’s resolution
-        this.scale(this.SCALE_VALUE);
-
+        // load data
         // Store the animation tiles
         for (var i = 0; i < world.animations.length; i++) {
             this.animationTiles.push(world.animations[i][0]);
             this.tileSequences[world.animations[i][0]] = world.animations[i];
         }
 
+        // Setup the world, entities, etc...
+
+        // Set the starting grid area
+        Map.init('overworld', [7,7]);
+
+        // Setup the Input
+        Input.init(KEYS);
+
+        //
+        HUD.init();
+
+        // player
+        this.player = Link.init(100, 100);
+
+        // set the game’s resolution
+        this.scale(this.SCALE_VALUE);
+
         return Promise.resolve();
     },
 
     scale(scaleValue=1) {
-        this.canvas.style.width     = this.width  * scaleValue + 'px';
-        this.canvas.style.height    = this.height * scaleValue + 'px';
+        this.canvas.style.width             = this.width  * scaleValue + 'px';
+        this.canvas.style.height            = this.height * scaleValue + 'px';
 
-        this.canvas.parentNode.style.width  = this.width * scaleValue + 'px';
+        this.canvas.parentNode.style.width  = this.width  * scaleValue + 'px';
         this.canvas.parentNode.style.height = this.height * scaleValue + 'px';
     },
 
@@ -130,27 +153,7 @@ let Game = {
      * Handlers
      ****************************************/
 
-    handleInput() {
-        if( Key.LEFT ) {
-            this.player.moveLeft();
-        }
-        if( Key.RIGHT ) {
-            this.player.moveRight();
-        }
-        if( Key.UP ) {
-            this.player.moveUp();
-        }
-        if( Key.DOWN ) {
-            this.player.moveDown();
-        }
-        if( Key.X ) {
-            this.player.attack();
-        }
-    },
-
     handleCollisions() {
-
-        var collisionArray = Map.collisions;
 
         // due to his sprite _apparently_ being 17px wide, this causes problems with entrances which are two tiles, or 16px wide.
         // So let’s ignore a whole pixel when calculating tile-based collisions.
@@ -175,41 +178,66 @@ let Game = {
         }
 
         // tile collisions
-        if( Key.UP ) { // up
-            var row         = Math.floor((this.player.y+9) / TILE_SIZE); // same for topleft and topright
-            var tlCell      = Map.pxToCell( this.player.x, this.player.y+9 );
-            var trCell      = Map.pxToCell( (this.player.x + collisionWidth), this.player.y+9 );
+        if( Input.isPressed('up') ) {
+            var row     = Math.floor((this.player.y+9) / TILE_SIZE); // same for topleft and topright
+            var tlCell  = Room.pxToCell( this.player.x, this.player.y+9 );
+            var trCell  = Room.pxToCell( (this.player.x + collisionWidth), this.player.y+9 );
 
             // now get the cells for each corner and check 'em!
-            if( collisionArray[tlCell] === 0 || collisionArray[trCell] === 0 ) {
-                this.player.y = (row * TILE_SIZE);
+            if( Room.collisions[tlCell] >= 1 || Room.collisions[trCell] >= 1 ) {
+                this.player.y = (row * TILE_SIZE)-1;
             }
         }
-        if( Key.DOWN ) { // down
-            var row         = Math.floor((this.player.y+this.player.height) / 8);
-            var blCell      = Map.pxToCell( this.player.x, (this.player.y+this.player.height) );
-            var brCell      = Map.pxToCell( (this.player.x + collisionWidth), (this.player.y+this.player.height) );
+        if( Input.isPressed('down') ) {
+            var row     = Math.floor((this.player.y+this.player.height) / 8);
+            var blCell  = Room.pxToCell( this.player.x, (this.player.y+this.player.height) );
+            var brCell  = Room.pxToCell( (this.player.x + collisionWidth), (this.player.y+this.player.height) );
 
-            if( collisionArray[blCell] === 0 || collisionArray[brCell] === 0 ) {
+            if( Room.collisions[blCell] >= 1 || Room.collisions[brCell] >= 1 ) {
                 this.player.y = (row * 8) - this.player.height;
             }
         }
-        if( Key.LEFT ) { // left
-            var col             = Math.floor(this.player.x / 8);
-            var tlCell      = Map.pxToCell( this.player.x, this.player.y+9 );
-            var blCell      = Map.pxToCell( this.player.x, (this.player.y+this.player.height) );
+        if( Input.isPressed('left') ) {
+            var col     = Math.floor(this.player.x / 8);
+            var tlCell  = Room.pxToCell( this.player.x, this.player.y+9 );
+            var blCell  = Room.pxToCell( this.player.x, (this.player.y+this.player.height-1) );
 
-            if( collisionArray[tlCell] === 0 || collisionArray[blCell] === 0 ) {
+            if( Room.collisions[tlCell] >= 1 || Room.collisions[blCell] >= 1 ) {
                 this.player.x = (col * 8) + 8;
             }
         }
-        if( Key.RIGHT ) { //right
-            var col             = Math.floor((this.player.x+this.player.width) / 8);
-            var trCell      = Map.pxToCell( (this.player.x + collisionWidth), this.player.y+9 );
-            var brCell      = Map.pxToCell( (this.player.x + collisionWidth), (this.player.y+this.player.height) );
+        if( Input.isPressed('right') ) {
+            var col     = Math.floor((this.player.x+this.player.width) / 8);
+            var trCell  = Room.pxToCell( (this.player.x + collisionWidth), this.player.y+9 );
+            var brCell  = Room.pxToCell( (this.player.x + collisionWidth), (this.player.y+this.player.height-1) );
 
-            if( collisionArray[trCell] === 0 || collisionArray[brCell] === 0 ) {
-                this.player.x = (col * 8) - this.player.width;
+            if( Room.collisions[trCell] >= 1 || Room.collisions[brCell] >= 1 ) {
+                this.player.x = (col * 8) - this.player.width+1;
+            }
+        }
+
+        // entity collisions
+        for (var i = 0; i < Room.entities.length; i++) {
+            let rect = Room.entities[i].getCollisionRect();
+            if( (this.player.x + this.player.width) >= rect.x1 &&
+                this.player.x < rect.x2 &&
+                (this.player.y + this.player.height) >= rect.y1 &&
+                this.player.y < rect.y2
+            ) {
+                // collision!
+                // TODO: Entity collision. Will handle in part2 of collisions.
+                switch (Room.entities[i].id) {
+                    case 'entrance1':
+                        Map.init('cave1', [0,0]);
+                        this.player.x = parseInt((ROOM_WIDTH / 2) - (this.player.width / 2)) + 1;
+                        this.player.y = ROOM_HEIGHT - this.player.height - 10;
+                        break;
+                    case 'entrance2':
+                        Map.init('overworld', [7,7]);
+                        this.player.x = 80;
+                        this.player.y = 26;
+                        break;
+                }
             }
         }
 
@@ -225,41 +253,67 @@ let Game = {
 
     render() {
 
-        var now = window.performance.now();
-        this.elapsed = (now - this.lastTime);
+        Stats.begin();
+
+        var now         = window.performance.now();
+        this.elapsed    = (now - this.lastTime);
+
 
         // Clear the screen
-        this.context.clearRect(0, 0, 256, 224);
+        this.context.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // shift all draw functions down by HUD_HEIGHT amount
         this.context.save();
         this.context.translate(0, HUD_HEIGHT);
 
-        // Draw map
-        Map.drawBackground(this.elapsed);
+        /*
+         * Updates
+         */
 
-        this.player.moving = false;
-
-        //
-        this.handleInput();
-
+        // player
         this.player.update(this.elapsed);
 
-        if( !this.screenAnimating ) {
+        // enemies
+
+        // tweens
+        for (var i = 0; i < this.tweens.length; i++) {
+            if( this.tweens[i].isAnimating() ) {
+                this.tweens[i].update(this.elapsed);
+            }
+            else {
+                this.tweens.splice(i, 1);
+                i--;
+            }
+
+        }
+
+        // Collisions
+        if( this.state !== GAME_STATE.LOADING ) {
             this.handleCollisions();
         }
 
+        /*
+         * Draw
+         */
+
+        // map
+        Map.render(this.elapsed);
+
+        // player
         this.player.draw();
+
+        // enemies
 
         //
         this.context.restore();
 
         // draw the HUD area last so it sits on top of all else.
-        this.context.fillStyle = '#000';
-        this.context.fillRect(0, 0, this.width, HUD_HEIGHT);
+        HUD.render(this.context);
 
         //
         this.lastTime = now;
+
+        Stats.end();
 
         // repeat!
         requestAnimationFrame(this.render.bind(this));

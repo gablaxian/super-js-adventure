@@ -9,12 +9,17 @@
 
     <style type="text/css" media="screen">
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        #container { width: 256px; height: 224px; margin: 20px auto 0 auto; }
+        #container { position: relative; width: 256px; height: 224px; margin: 20px auto 0 auto; }
 
         canvas {
             image-rendering: -moz-crisp-edges;         /* Firefox */
             image-rendering: pixelated;                /* Chrome */
         }
+
+        #stats     { width: 256px; margin: 20px auto 0 auto; font-size: 12px; font-family: monospace; }
+        #debugger  { display: none; position: absolute; top: 0; right: -280px; width: 260px; padding: 1rem; border: 1px solid #ccc; font-family: monospace; font-size: 12px; }
+        #debugger > div { display: flex; justify-content: space-between; }
+        #debugger hr { margin: 0.5rem 0; }
     </style>
 
 </head>
@@ -24,20 +29,41 @@
 
     <div id="container">
         <canvas id="super-js-adventure" width="256" height="224"></canvas>
+
+        <div id="debugger"></div>
     </div>
+
+    <div id="stats"></div>
 
 
     <!--*****************************************
         Scripts
     ******************************************-->
 
-    <!-- Helpers -->
+    <!-- Config -->
+    <script src="js/data/_config.js"></script>
 
     <!-- Data -->
-    <script src="js/world.js"></script>
+    <script src="js/data/world.js"></script>
+    <script src="js/data/game_data.js"></script>
+
+    <!-- Helpers -->
+    <script src="js/tools/stats.js"></script>
+    <script src="js/tools/debugger.js"></script>
 
     <!-- Engine -->
-    <script src="js/input.js"></script>
+    <script src="js/engine/utils.js"></script>
+    <script src="js/engine/input.js"></script>
+    <script src="js/engine/layer.js"></script>
+    <script src="js/engine/room.js"></script>
+    <script src="js/engine/enemy.js"></script>
+    <script src="js/engine/entity.js"></script>
+    <script src="js/engine/tween.js"></script>
+
+    <!-- Custom Objects -->
+    <script src="js/hud.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/projectile.js"></script>
     <script src="js/link.js"></script>
     <script src="js/map.js"></script>
     <script src="js/main.js"></script>
