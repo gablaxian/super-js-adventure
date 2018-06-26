@@ -27,10 +27,11 @@ const MESSAGES = {
  * Entity definitions
  */
 const ENTITY_CFG = {
-    ENTRANCE:       {                               sx: 0,  sy: 0,  w: 16, h: 1  }, // entrances are just triggers. They just link up to tiles already placed via the editor.
-    BUSH1:          { tileset: 'overworld-terrain', sx: 48, sy: 48, w: 16, h: 16 },
+    // entrances are just triggers. They link up to tiles already placed via the editor.
+    ENTRANCE:       {                               sx: 0,  sy: 0,  w: 16, h: 1  },
+    BUSH1:          { tileset: 'overworld-terrain', sx: 48, sy: 48, w: 16, h: 16, collidable: true, },
     GRASS:          { tileset: 'overworld-terrain', sx: 16, sy: 64, w: 16, h: 16 },
-    TREE:           { tileset: 'overworld-flora',   sx: 0,  sy: 80, w: 40, h: 40 },
+    TREE:           { tileset: 'overworld-flora',   sx: 0,  sy: 80, w: 32, h: 32, collidable: true, },
 };
 
 /*

@@ -30,7 +30,7 @@ const Map = {
 
         //
         this.distanceToScroll       = 0;
-        this.speed                  = 4;
+        this.speed                  = 6;
         this.count                  = 0;
 
         //
@@ -68,8 +68,10 @@ const Map = {
     loadNextRoom: function(dir) {
 
         // snapshot old room.
-        let context = this.old_room.getContext('2d');
-        let tween   = null;
+        let context     = this.old_room.getContext('2d');
+        let tween       = null;
+        let durationX   = (ROOM_WIDTH / (60*this.speed)) * 1000;
+        let durationY   = (ROOM_HEIGHT / (60*this.speed)) * 1000;
 
         Room.render(context, 0);
 
@@ -79,28 +81,28 @@ const Map = {
             this.nextScreenCoords[1]    = this.currentScreenCoords[1];
             this.distanceToScroll       = ROOM_WIDTH;
 
-            tween = Object.create(Tween).init(Game.player, {x: Game.player.x}, {x: ROOM_WIDTH - 32}, 1000);
+            tween = Object.create(Tween).init(Game.player, {x: Game.player.x}, {x: ROOM_WIDTH - 28}, durationX);
         }
         else if( dir == 'right' ) {
             this.nextScreenCoords[0]    = this.currentScreenCoords[0] + 1;
             this.nextScreenCoords[1]    = this.currentScreenCoords[1];
             this.distanceToScroll       = ROOM_WIDTH;
 
-            tween = Object.create(Tween).init(Game.player, {x: Game.player.x}, {x: 16}, 1000);
+            tween = Object.create(Tween).init(Game.player, {x: Game.player.x}, {x: 10}, durationX);
         }
         else if( dir == 'up' ) {
             this.nextScreenCoords[0]    = this.currentScreenCoords[0];
             this.nextScreenCoords[1]    = this.currentScreenCoords[1] - 1;
             this.distanceToScroll       = ROOM_HEIGHT;
 
-            tween = Object.create(Tween).init(Game.player, {y: Game.player.y}, {y: ROOM_HEIGHT - 32}, 700);
+            tween = Object.create(Tween).init(Game.player, {y: Game.player.y}, {y: ROOM_HEIGHT - 32}, durationY);
         }
         else if( dir == 'down' ) {
             this.nextScreenCoords[0]    = this.currentScreenCoords[0];
             this.nextScreenCoords[1]    = this.currentScreenCoords[1] + 1;
             this.distanceToScroll       = ROOM_HEIGHT;
 
-            tween = Object.create(Tween).init(Game.player, {y: Game.player.y}, {y: 10}, 700);
+            tween = Object.create(Tween).init(Game.player, {y: Game.player.y}, {y: 10}, durationY);
         }
 
         this.nextRoomDir        = dir;

@@ -4,15 +4,16 @@
 const Link = {
 
     init(x, y) {
-        this.img        = Game.spritesheets['link'].img;
+        this.img            = Game.spritesheets['link'].img;
 
-        this.x          = x;
-        this.y          = y;
+        this.x              = x;
+        this.y              = y;
 
-        this.width      = 17;
-        this.height     = 25;
+        this.width          = 17;
+        this.height         = 25;
 
-        this.speed      = 1;
+        this.speed          = 1.5;
+        this.diagonalSpeed  = (2*this.speed/3); // two thirds of normal speed.
 
         this.fps                    = 30;
         this.animationUpdateTime    = (1000 / this.fps);
@@ -33,32 +34,37 @@ const Link = {
         this.sequenceIdx    = 0;
         this.moving         = false;
         this.facing         = 'down';
+        this.dir            = DIR.DOWN;
 
         return this;
     },
 
-    moveUp() {
-        this.moving = true;
-        this.facing = 'up';
-        this.y      -= this.speed;
+    /***********************************
+     *
+     **********************************/
+
+    getCenterPoint() {
+        return {
+            x: this.posX + (this.width/2),
+            y: this.posY + (this.depth/2)
+        }
     },
 
-    moveDown() {
-        this.moving = true;
-        this.facing = 'down';
-        this.y      += this.speed;
+    setX(x) {
+        this.posX = x;
     },
 
-    moveLeft() {
-        this.moving = true;
-        this.facing = 'left';
-        this.x      -= this.speed;
+    setY(y) {
+        this.posY = y;
     },
 
-    moveRight() {
-        this.moving = true;
-        this.facing = 'right';
-        this.x      += this.speed;
+    getCollisionRect() {
+        return {
+            x1: this.x,
+            x2: this.x + this.width - 1,
+            y1: this.y + 9,
+            y2: this.y + (this.height - 1),
+        }
     },
 
     attack() {},
@@ -67,19 +73,61 @@ const Link = {
         this.timeSinceLastFrameSwap += elapsed;
         this.moving = false;
 
-        if( Game.state !== GAME_STATE.LOADING ) {
-            if( Input.isPressed('left') ) {
-                this.moveLeft();
+        if( Game.state === GAME_STATE.PLAYING ) {
+            if( Input.isPressed('up') || Input.isPressed('down') || Input.isPressed('left') || Input.isPressed('right') ) {
+                this.moving = true;
             }
-            if( Input.isPressed('right') ) {
-                this.moveRight();
+
+            if( Input.isPressed('up') && Input.isPressed('left') ) {
+                this.facing = 'up';
+                this.dir    = DIR.UPLEFT;
+                this.y      -= this.diagonalSpeed;
+                this.x      -= this.diagonalSpeed;
             }
-            if( Input.isPressed('up') ) {
-                this.moveUp();
+            else if( Input.isPressed('up') && Input.isPressed('right') ) {
+                this.facing = 'up';
+                this.dir    = DIR.UPRIGHT;
+                this.y      -= this.diagonalSpeed;
+                this.x      += this.diagonalSpeed;
             }
-            if( Input.isPressed('down') ) {
-                this.moveDown();
+            else if( Input.isPressed('down') && Input.isPressed('left') ) {
+                this.facing = 'down';
+                this.dir    = DIR.DOWNLEFT;
+                this.y      += this.diagonalSpeed;
+                this.x      -= this.diagonalSpeed;
             }
+            else if( Input.isPressed('down') && Input.isPressed('right') ) {
+                this.facing = 'down';
+                this.dir    = DIR.DOWNRIGHT;
+                this.y      += this.diagonalSpeed;
+                this.x      += this.diagonalSpeed;
+            }
+            else if( Input.isPressed('up') ) {
+                this.facing = 'up';
+                this.dir    = DIR.UP;
+                this.y      -= this.speed;
+            }
+            else if( Input.isPressed('down') ) {
+                this.facing = 'down';
+                this.dir    = DIR.DOWN;
+                this.y      += this.speed;
+            }
+            else if( Input.isPressed('left') ) {
+                this.facing = 'left';
+                this.dir    = DIR.LEFT;
+                this.x      -= this.speed;
+            }
+            else if( Input.isPressed('right') ) {
+                this.facing = 'right';
+                this.dir    = DIR.RIGHT;
+                this.x      += this.speed;
+            }
+            else {
+                // correct the positions to the nearest round number
+                this.x = this.x|0;
+                this.y = this.y|0;
+            }
+
             if( Input.isPressed('attack') ) {
                 this.attack();
             }
@@ -108,7 +156,16 @@ const Link = {
     },
 
     //
-    draw() {
-        Game.context.drawImage(this.img, this.offsetX, this.offsetY, this.width, this.height, this.x, this.y, this.width, this.height);
+    draw(context) {
+        context.drawImage(this.img, this.offsetX, this.offsetY, this.width, this.height, this.x|0, this.y|0, this.width, this.height);
+
+        if( DEBUG ) {
+            let rect = this.getCollisionRect();
+
+            context.fillStyle   = 'rgba(255,0,0,0.5)';
+            context.strokeStyle = 'rgba(255,0,0,0.9)';
+            context.fillRect( rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1 );
+            context.strokeRect( rect.x1 + 0.5 , rect.y1 + 0.5, rect.x2 - rect.x1 - 1, rect.y2 - rect.y1 - 1 );
+        }
     }
 }
