@@ -205,6 +205,27 @@ let Editor = {
         return Promise.resolve();
     },
 
+    buildWorld() {
+        let world = {};
+
+        world.version   = CONFIG.version;
+        world.tile_size = Global.TILE_SIZE;
+        world.maps      = [];
+
+        for (var map of Global.world.maps) {
+            world.maps.push({
+                "name":     map.name,
+                "width":    map.TILES_WIDE,
+                "height":   map.TILES_HIGH,
+                "layers":   map.layers.map(layer => {
+                    return layer.export();
+                })
+            });
+        }
+
+        return world;
+    },
+
     /**
      * Save all map data.
      */
@@ -214,22 +235,7 @@ let Editor = {
         this.saveTimeoutID = setTimeout(function () {
             console.log('saving...');
 
-            let world = {};
-
-            world.version   = CONFIG.version;
-            world.tile_size = Global.TILE_SIZE;
-            world.maps      = [];
-
-            for (var map of Global.world.maps) {
-                world.maps.push({
-                    "name":     map.name,
-                    "width":    map.TILES_WIDE,
-                    "height":   map.TILES_HIGH,
-                    "layers":   map.layers.map( layer => {
-                        return layer.export();
-                    })
-                });
-            }
+            let world = Editor.buildWorld();
 
             DB.setItem('world', world);
         }, 500);
@@ -314,7 +320,24 @@ let Editor = {
     },
 
     /**
-     * Export the database to a JSON string.
+     * Export the DB to a JSON string.
+     * No optimisations made. Need the output as close to how the DB saves it as possible so we can import it back in.
+     */
+    exportDB() {
+        let world       = Editor.buildWorld();
+        let worldStr    = prettify( JSON.stringify(world) );
+
+        UI.Modal.show(worldStr);
+    },
+
+    /**
+     * Import the DB from a JSON string.
+     * 
+     */
+    importDB() {},
+
+    /**
+     * Export the world to a JSON string.
      * Here we optimise the output to be smaller and more efficient.
      */
     exportData() {
