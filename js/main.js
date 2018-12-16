@@ -67,7 +67,7 @@ const Game = {
                 "gid":          tileset.gid,
                 "TILES_WIDE":   tileset.width / TILE_SIZE
             }
-            obj.img.src = 'editor/images/tilesets/'+tileset.name;
+            obj.img.src = 'images/tilesets/'+tileset.name;
 
             this.tilesets.push(obj);
 
