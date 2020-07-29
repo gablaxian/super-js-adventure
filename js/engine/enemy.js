@@ -84,7 +84,7 @@ const Enemy = {
 
     render(context) {
 
-        if( DEBUG ) {
+        if(DEBUG) {
             // draw floorspace rectangle
             context.fillStyle = 'rgba(128,0,0,0.5)';
             context.fillRect( this.posX, this.posY, this.width, this.height );

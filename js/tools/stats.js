@@ -18,7 +18,7 @@ const Stats = {
     },
 
     draw() {
-        if( !DEBUG ) return;
+        if (!DEBUG) return;
         
         this.currentFrameTime = (this.endTime - this.startTime);
 

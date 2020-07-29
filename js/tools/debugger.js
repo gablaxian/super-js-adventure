@@ -71,4 +71,6 @@ const Debugger = {
 
 };
 
-if( DEBUG ) Debugger.init();
+if (DEBUG) {
+    Debugger.init();
+}

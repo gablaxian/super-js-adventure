@@ -128,15 +128,14 @@ const Game = {
 
         // Setup the world, entities, etc...
 
-        if( DEBUG ) {
-            window.Global = {};
-            Global.scale = this.SCALE_VALUE;
-            this.grid = Object.create(Grid);
-            this.grid.init(0, 0, 8, 8);
-            this.grid.resize(ROOM_WIDTH, ROOM_HEIGHT);
-            this.grid.scale(1);
-            this.grid.render();
-        }
+        // DEBUG
+        window.Global = {};
+        Global.scale = this.SCALE_VALUE;
+        this.grid = Object.create(Grid);
+        this.grid.init(0, 0, 8, 8);
+        this.grid.resize(ROOM_WIDTH, ROOM_HEIGHT);
+        this.grid.scale(1);
+        this.grid.render();
 
         // Set the starting grid area
         Map.init('overworld', [7,7]);
@@ -477,7 +476,7 @@ const Game = {
         // map
         Map.render(this.elapsed);
 
-        if( DEBUG ) {
+        if (DEBUG) {
             // grids
             let gW = this.grid.canvas.width;
             let gH = this.grid.canvas.height;

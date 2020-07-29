@@ -140,9 +140,8 @@ const Room = {
             this.createLayer(layer.data);
         }
 
-        if (DEBUG) {
-            this.createCollisionLayer();
-        }
+        // DEBUG
+        this.createCollisionLayer();
     },
 
     createLayer(data) {
