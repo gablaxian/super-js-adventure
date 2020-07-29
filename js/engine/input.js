@@ -38,11 +38,15 @@ const Input = {
         document.addEventListener('keyup',   e => { this.changeKey(e.keyCode, 0) });
 
         // Checks Chrome to see if the GamePad API is supported.
-        let gamepadSupportAvailable = !!navigator.webkitGetGamepads || !!navigator.webkitGamepads;
+        let gamepadSupportAvailable = !!navigator.getGamepads;
 
         if(gamepadSupportAvailable) {
+            console.log('gamepad support');
+
             // Since Chrome only supports polling, we initiate polling loop straight away. For Firefox, we will only do it if we get a connect event.
-            if (!!navigator.webkitGamepads || !!navigator.webkitGetGamepads) {
+            if (!!navigator.getGamepads) {
+                this.gamepad = navigator.getGamepads && navigator.getGamepads()[0];
+                setTimeout( e => { console.log(this.gamepad); }, 500 );
                 this.startPolling();
             }
         }
@@ -131,10 +135,11 @@ const Input = {
      */
     pollStatus() {
         // We're only interested in one gamepad, which is the first.
-        this.gamepad = navigator.webkitGetGamepads && navigator.webkitGetGamepads()[0];
+        this.gamepad = navigator.getGamepads && navigator.getGamepads()[0];
 
         if(!this.gamepad)
             return;
+
 
         // Don’t do anything if the current timestamp is the same as previous
         // one, which means that the state of the gamepad hasn’t changed.
@@ -150,19 +155,25 @@ const Input = {
 
     updateKeys() {
 
-        // console.log(gamepad.buttons)
+        if( true ) {
+            for (var i = 0; i < this.gamepad.buttons.length; i++) {
+                if( this.gamepad.buttons[i].pressed ) {
+                    console.log(i);
+                }
+            }
+        }
 
-        // Map the d-pad
-        KEY.UP      = this.gamepad.axes[1] <= -0.5  // up
-        KEY.DOWN    = this.gamepad.axes[1] >= 0.5   // down
-        KEY.LEFT    = this.gamepad.axes[0] <= -0.5  // left
-        KEY.RIGHT   = this.gamepad.axes[0] >= 0.5   // right
+        // Map the analogue joystick & d-pad
+        this.KEY_STATES[this.KEYCODE_MAP.UP]    = this.gamepad.axes[1] <= -0.5  || this.gamepad.buttons[12].value // up
+        this.KEY_STATES[this.KEYCODE_MAP.DOWN]  = this.gamepad.axes[1] >= 0.5   || this.gamepad.buttons[13].value // down
+        this.KEY_STATES[this.KEYCODE_MAP.LEFT]  = this.gamepad.axes[0] <= -0.5  || this.gamepad.buttons[14].value // left
+        this.KEY_STATES[this.KEYCODE_MAP.RIGHT] = this.gamepad.axes[0] >= 0.5   || this.gamepad.buttons[15].value // right
 
         // Map the Buttons
-        this.key[4] = this.gamepad.buttons[0];  // attack (A)
-        this.key[5] = this.gamepad.buttons[1];  // use item (B)
-        this.key[6] = this.gamepad.buttons[10]; // start
-        this.key[7] = this.gamepad.buttons[9];  // select
+        this.KEY_STATES[this.KEYCODE_MAP.A]     = this.gamepad.buttons[0];  // attack (A)
+        this.KEY_STATES[this.KEYCODE_MAP.B]     = this.gamepad.buttons[1];  // use item (B)
+        this.KEY_STATES[this.KEYCODE_MAP.ENTER] = this.gamepad.buttons[10]; // start
+        this.KEY_STATES[this.KEYCODE_MAP.SHIFT] = this.gamepad.buttons[9];  // select
     }
 
 };

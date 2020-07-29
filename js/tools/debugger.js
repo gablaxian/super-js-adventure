@@ -9,8 +9,10 @@ const Debugger = {
 
         this.watchers = [];
 
-        this.addWatcher('playerX');
-        this.addWatcher('playerY');
+        this.addWatcher('playerX1');
+        this.addWatcher('playerX2');
+        this.addWatcher('playerY1');
+        this.addWatcher('playerY2');
         this.addBreak();
         // this.addListener('Collision bounds');
 
@@ -61,8 +63,10 @@ const Debugger = {
 
     //
     update() {
-        this.watchers['playerX'].innerHTML = Link.x;
-        this.watchers['playerY'].innerHTML = Link.y;
+        this.watchers['playerX1'].innerHTML = Link.getCollisionRect().x1;
+        this.watchers['playerX2'].innerHTML = Link.getCollisionRect().x2;
+        this.watchers['playerY1'].innerHTML = Link.getCollisionRect().y1;
+        this.watchers['playerY2'].innerHTML = Link.getCollisionRect().y2;
     }
 
 };

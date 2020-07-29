@@ -73,6 +73,10 @@ const Room = {
                 cell    = ((row + rowOffset) * Map.TILES_WIDE) + (col + colOffset);
                 tile    = data[cell];
 
+                // convert the data array which contain nulls/empty for no collision or a 0 indexed
+                // number for collision to a pure number based array so we can use a fast UInt array.
+                // 0 = no collision
+                // 1+ = collision type
                 this.collisions[n++] = (tile == undefined || tile == null) ? 0 : tile + 1;
             }
         }
@@ -88,7 +92,7 @@ const Room = {
                 entitiesLayer.data[i].y < (roomY + ROOM_HEIGHT)
             ) {
                 this.entities.push( Object.create(Entity).init(
-                        entitiesLayer.data[i].id,
+                        entitiesLayer.data[i].id.toLowerCase(),
                         entitiesLayer.data[i].x - roomX,
                         entitiesLayer.data[i].y - roomY
                     )
@@ -135,6 +139,10 @@ const Room = {
 
             this.createLayer(layer.data);
         }
+
+        if (DEBUG) {
+            this.createCollisionLayer();
+        }
     },
 
     createLayer(data) {
@@ -172,14 +180,14 @@ const Room = {
                     tilesetCoords = Map.cellToPx.call(tileset, (tile - tileset.gid));
 
                     // draw to layer's canvas.
-                    layerObj.context.drawImage(tileset.img, tilesetCoords.x, tilesetCoords.y, TILE_SIZE, TILE_SIZE, (col * 8), (row * 8), TILE_SIZE, TILE_SIZE);
+                    layerObj.context.drawImage(tileset.bitmap, tilesetCoords.x, tilesetCoords.y, TILE_SIZE, TILE_SIZE, (col * 8), (row * 8), TILE_SIZE, TILE_SIZE);
 
                     // now check if that tile was an animated tile.
                     // if so, loop through the tilesequence and add each frame to the consecutive animLayers.
                     if( Game.animationTiles.indexOf(tile) != -1 ) {
                         for (var i = 0; i < 3; i++) { // there are always always 3.
                             tilesetCoords = Map.cellToPx.call(tileset, (Game.tileSequences[tile][i] - tileset.gid));
-                            this.animLayers[i].context.drawImage(tileset.img, tilesetCoords.x, tilesetCoords.y, TILE_SIZE, TILE_SIZE, (col * 8), (row * 8), TILE_SIZE, TILE_SIZE);
+                            this.animLayers[i].context.drawImage(tileset.bitmap, tilesetCoords.x, tilesetCoords.y, TILE_SIZE, TILE_SIZE, (col * 8), (row * 8), TILE_SIZE, TILE_SIZE);
                         }
                     }
 
@@ -188,6 +196,69 @@ const Room = {
             }
         }
 
+    },
+
+    createCollisionLayer() {
+        let cell = 0;
+        let tile = 0;
+
+        //
+        this.collisionLayer = Object.create(Layer).init();
+        let context = this.collisionLayer.context;
+
+        context.fillStyle   = 'rgba(255, 0, 0, 0.3)';
+        context.strokeStyle = 'rgba(255, 0, 0, 0.9)';
+
+        for (var row = 0; row < this.TILES_HIGH; row++) {
+            for (var col = 0; col < this.TILES_WIDE; col++) {
+
+                cell = (row * this.TILES_WIDE) + col;
+                tile = this.collisions[cell];
+
+                switch (tile) {
+                    case 1: // full tile collision
+                        context.fillRect((col * 8), (row * 8), TILE_SIZE, TILE_SIZE);
+                        context.strokeRect((col * 8)+0.5, (row * 8)+0.5, TILE_SIZE - 1, TILE_SIZE - 1);
+                        break;
+                    case 2: // top left corner
+                        context.beginPath();
+                        context.moveTo((col * 8), (row * 8));
+                        context.lineTo((col * 8) + TILE_SIZE, (row * 8));
+                        context.lineTo((col * 8), (row * 8) + TILE_SIZE);
+                        context.closePath();
+                        context.fill();
+                        context.stroke();
+                        break;
+                    case 3: // top right corner
+                        context.beginPath();
+                        context.moveTo((col * 8), (row * 8));
+                        context.lineTo((col * 8) + TILE_SIZE, (row * 8) + TILE_SIZE);
+                        context.lineTo((col * 8) + TILE_SIZE, (row * 8));
+                        context.closePath();
+                        context.fill();
+                        context.stroke();
+                        break;
+                    case 4: // bottom right corner
+                        context.beginPath();
+                        context.moveTo((col * 8) + TILE_SIZE, (row * 8)); // top right
+                        context.lineTo((col * 8), (row * 8) + TILE_SIZE); // bottom left
+                        context.lineTo((col * 8) + TILE_SIZE, (row * 8) + TILE_SIZE); // bottom right
+                        context.closePath();
+                        context.fill();
+                        context.stroke();
+                        break;
+                    case 5: // bottom left corner
+                        context.beginPath();
+                        context.moveTo((col * 8), (row * 8));
+                        context.lineTo((col * 8), (row * 8) + TILE_SIZE);
+                        context.lineTo((col * 8) + TILE_SIZE, (row * 8) + TILE_SIZE);
+                        context.closePath();
+                        context.fill();
+                        context.stroke();
+                        break;
+                }
+            }
+        }
     },
 
     render(context, elapsed) {
@@ -211,10 +282,14 @@ const Room = {
             this.layers[i].render(context);
         }
 
+        if (DEBUG) {
+            this.collisionLayer.render(context);
+        }
+
         // render the entities
         for( var entity of this.entities ) {
             entity.render(context);
         }
-    }
+    },
 
 };

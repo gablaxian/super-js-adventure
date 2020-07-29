@@ -4,7 +4,7 @@
 /**
  * game constants
  */
-const DEBUG             = true;
+const DEBUG             = 0;
 
 const SCREEN_WIDTH      = 256;
 const SCREEN_HEIGHT     = 224;
