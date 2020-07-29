@@ -5,4 +5,6 @@ A Javascripting adventure, the likes of which you've probably seen before! Prepa
 
 Get ready, folks. Because JS games do get tougher than this.
 
+![](https://gablaxian.com/assets/img/experiments/experiments-super-js-adventure.png)
+
 ~ gablaxian
